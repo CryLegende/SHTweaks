@@ -1,0 +1,30 @@
+# ============================================================================
+#  SHTweaks : messages du chat
+# ============================================================================
+#  Codes couleur & et &#RRGGBB acceptés. Format SkyHand : préfixe de la
+#  couleur du type, texte en &7, mots importants dans la couleur du type.
+#    &a succès · &e information · &6 avertissement · &c erreur
+#  Un message vide n'est pas envoyé.
+# ============================================================================
+
+# sculk-confirm : premier coup sur un catalyseur sans Toucher de soie.
+sculk-confirm: '&7&l« &6&lSH &8&l» &7Vous allez casser un &6catalyseur de sculk &7sans Toucher de soie : &6recassez-le &7pour confirmer.'
+
+# amethyst-nerf : seulement si send-message est activé. {amount} = éclats lâchés.
+amethyst-break: '&7&l« &e&lSH &8&l» &7Vous avez obtenu &e{amount} éclat(s) d''améthyste&7.'
+
+# villagers : clic droit sur un villageois ou un marchand quand le commerce est coupé.
+villager-trade-disabled: '&7&l« &c&lSH &8&l» &7Le commerce avec les &cvillageois &7est désactivé.'
+
+# sign-edit
+sign-vip-required: '&7&l« &c&lSH &8&l» &7Grade &cVIP &7requis pour modifier les pancartes.'
+sign-not-your-island: '&7&l« &c&lSH &8&l» &7Vous devez être sur &cvotre île &7pour modifier les pancartes.'
+
+# /shtweaks
+no-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission &7d''utiliser cette commande.'
+admin-usage: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shtweaks reload &7ou &e/shtweaks modules'
+reloaded: '&7&l« &a&lSH &8&l» &7Configuration rechargée : &a{active}/{total} modules &7actifs.'
+modules-header: '&7&l« &e&lSH &8&l» &7Modules de SHTweaks :'
+module-line-on: '&8 • &a{module} &7actif'
+module-line-off: '&8 • &7{module} &8coupé'
+module-line-missing: '&8 • &c{module} &7coupé : &c{plugin} &7absent'

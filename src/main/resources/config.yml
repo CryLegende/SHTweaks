@@ -1,0 +1,118 @@
+# ============================================================================
+#  SHTweaks : petits réglages de gameplay d'Opale
+# ============================================================================
+#
+#  Chaque réglage est un module qui s'active ou se coupe avec « enabled ».
+#
+#  Modules :
+#    indestructible-items  Items au sol indestructibles (lave, feu, explosions)
+#    stacked-sheep         Pas de tonte des moutons stackés (WildStacker)
+#    infinite-anvils       Enclumes qui ne s'abîment pas dans certains mondes
+#    twerk-crops           S'accroupir fait pousser les cultures proches
+#    sculk-confirm         Confirmation avant de casser un catalyseur de sculk
+#    amethyst-nerf         Quantité d'éclats d'améthyste par grappe
+#    villagers             Villageois sans IA, sans commerce ni reproduction
+#    sign-edit             Modifier une pancarte écrite : VIP, sur son île
+#    door-reset            Portes et trappes qui se referment seules
+#
+#  Commandes :
+#    /shtweaks reload   Recharge config.yml et messages.yml, relance les modules.
+#    /shtweaks modules  Liste les modules et leur état.
+#
+#  Permissions :
+#    shtweaks.admin          /shtweaks (op par défaut)
+#    shsignedit.use          Modifier une pancarte déjà écrite sur son île
+#    shsignedit.bypass       Modifier toutes les pancartes, partout
+#    shinteractreset.bypass  Les portes et trappes ne se referment pas
+#
+#  Les messages des modules sont dans messages.yml.
+# ============================================================================
+
+modules:
+
+  indestructible-items:
+    enabled: true
+    # Items qui restent destructibles (le cactus détruit les items, c'est voulu).
+    excluded:
+      - CACTUS
+
+  stacked-sheep:
+    # Nécessite WildStacker : bloque les cisailles (main et distributeur) sur un
+    # mouton qui en représente plusieurs.
+    enabled: true
+
+  infinite-anvils:
+    enabled: true
+    # Mondes où les enclumes ne s'usent jamais.
+    worlds:
+      - spawn
+
+  twerk-crops:
+    enabled: true
+    # Rayon horizontal, en blocs, autour du joueur (une couche au-dessus et en dessous).
+    radius: 2
+    # Chance, sur 100, qu'une culture prenne un stade à chaque accroupissement.
+    chance: 35
+    # Délai minimal, en millisecondes, après un accroupissement qui a fait pousser quelque chose.
+    cooldown-ms: 500
+    # Cultures jamais accélérées (noms de blocs, ex. WHEAT, NETHER_WART).
+    excluded-blocks:
+    #  - WHEAT
+    # Mondes où le module ne fait rien.
+    excluded-worlds:
+      - spawn
+      - arene
+      - Revent
+
+  sculk-confirm:
+    enabled: true
+    # Délai, en secondes, pour recasser le catalyseur et confirmer.
+    confirmation-seconds: 10
+
+  amethyst-nerf:
+    enabled: true
+    # Éclats lâchés par une grappe cassée sans Toucher de soie (tirés entre min et max).
+    min-drops: 1
+    max-drops: 1
+    # Fortune ajoute son niveau à la quantité, sans dépasser max-drops.
+    fortune-affects-amount: false
+    # Envoyer le message amethyst-break de messages.yml à chaque grappe cassée.
+    send-message: false
+
+  villagers:
+    enabled: true
+    # Les villageois zombies ne peuvent plus être soignés.
+    prevent-zombie-curing: true
+    # Villageois sans IA : ils ne bougent plus.
+    no-ai: true
+    # Commerce désactivé (villageois et marchand ambulant).
+    disable-trading: true
+    disable-breeding: true
+    prevent-item-pickup: true
+    silent: false
+    prevent-profession-change: true
+    # Plus de nouveaux échanges (montée de niveau, réapprovisionnement).
+    prevent-new-trades: true
+    invulnerable: false
+    prevent-door-opening: false
+    # Les villageois n'appellent plus de golem de fer.
+    prevent-golem-spawning: true
+
+  sign-edit:
+    enabled: true
+    # Mondes où la règle s'applique ; ailleurs, seule la permission bypass permet d'éditer.
+    worlds:
+      - SuperiorWorld
+
+  door-reset:
+    enabled: true
+    # Délai, en secondes, avant qu'une porte, une trappe ou un portillon reprenne son état.
+    delay-seconds: 3
+    worlds:
+      - spawn
+      - arene
+    partner-sync:
+      # Une double porte ou deux trappes côte à côte s'ouvrent ensemble.
+      enabled: true
+      # true : seulement dans les mondes ci-dessus ; false : partout.
+      only-in-worlds: false
