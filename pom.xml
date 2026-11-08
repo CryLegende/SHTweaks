@@ -71,12 +71,5 @@
             <version>2026.3</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Module moutons : taille des stacks -->
-        <dependency>
-            <groupId>com.bgsoftware</groupId>
-            <artifactId>WildStackerAPI</artifactId>
-            <version>2024.1</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 </project>

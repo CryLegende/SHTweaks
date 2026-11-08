@@ -14,7 +14,7 @@ import java.util.Set;
  * Les enclumes ne s'usent pas dans les mondes configurés : l'usure est annulée avant d'être appliquée,
  * y compris quand l'enclume allait se briser.
  */
-public final class InfiniteAnvils extends Module {
+public final class AnvilsModule extends Module {
 
     private Set<String> worlds;
 

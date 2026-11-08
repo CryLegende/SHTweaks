@@ -28,14 +28,20 @@ import java.util.Set;
 
 /**
  * Portes, trappes et portillons reprennent leur état d'origine après un délai dans les mondes configurés.
- * Une double porte (ou deux trappes côte à côte) s'ouvre en même temps que celle qu'on clique.
+ * Les deux battants d'une double porte, ou deux trappes identiques côte à côte, s'ouvrent ensemble.
+ * L'état du partenaire est relevé avant tous les plugins : si DoorsReloaded le bouge aussi, il lui donne
+ * le même état et le partenaire reprend quand même son état d'origine avec le bloc cliqué.
+ * Les portes et trappes en fer ne s'ouvrent pas à la main : elles sont ignorées.
  */
-public final class DoorReset extends Module {
-
-    private static final String BYPASS = "shinteractreset.bypass";
+public final class DoorsModule extends Module {
 
     /** Reset en attente : la tâche et l'état à remettre (celui d'avant le premier clic de la série). */
     private record Pending(BukkitTask task, BlockData initial) {
+    }
+
+    /** Clic relevé avant tous les plugins : le bloc, son partenaire éventuel et leurs états d'avant. */
+    private record Snapshot(PlayerInteractEvent event, Block clicked, BlockData clickedBefore,
+                            Block partner, BlockData partnerBefore) {
     }
 
     /** Position du partenaire d'une porte (décalage x/z, charnière et orientation de la porte cliquée). */
@@ -53,23 +59,28 @@ public final class DoorReset extends Module {
             new PartnerRule(1, 0, Door.Hinge.LEFT, BlockFace.NORTH)
     };
 
+    private static final BlockFace[] SIDES = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+
     private final Map<Location, Pending> pending = new HashMap<>();
+    private Snapshot snapshot;
     private int delayTicks;
     private Set<String> worlds;
-    private boolean partnerSync;
-    private boolean partnerOnlyInWorlds;
+    private boolean pairDoors;
+    private boolean pairTrapdoors;
+    private boolean pairsOnlyInWorlds;
 
     @Override
     protected void load(ConfigurationSection config) {
         int seconds = config.getInt("delay-seconds", 3);
         if (seconds <= 0) {
-            plugin.getLogger().warning("door-reset.delay-seconds doit être positif, 3 secondes utilisées.");
+            plugin.getLogger().warning(path("delay-seconds") + " doit être positif, 3 secondes utilisées.");
             seconds = 3;
         }
         delayTicks = seconds * 20;
         worlds = new HashSet<>(config.getStringList("worlds"));
-        partnerSync = config.getBoolean("partner-sync.enabled", true);
-        partnerOnlyInWorlds = config.getBoolean("partner-sync.only-in-worlds", false);
+        pairDoors = config.getBoolean("pairs.doors", true);
+        pairTrapdoors = config.getBoolean("pairs.trapdoors", true);
+        pairsOnlyInWorlds = config.getBoolean("pairs.only-in-worlds", false);
     }
 
     /** Remet tout de suite les blocs en attente : une porte ouverte juste avant l'arrêt resterait ouverte. */
@@ -77,55 +88,56 @@ public final class DoorReset extends Module {
     protected void unload() {
         for (Map.Entry<Location, Pending> entry : pending.entrySet()) {
             entry.getValue().task().cancel();
-            Location location = entry.getKey();
-            if (location.getWorld() == null) {
-                continue;
-            }
-            Block block = location.getBlock();
-            BlockData initial = entry.getValue().initial();
-            if (block.getType() == initial.getMaterial() && !block.getBlockData().matches(initial)) {
-                block.setBlockData(initial, true);
-            }
+            revert(entry.getKey(), entry.getValue().initial(), false);
         }
         pending.clear();
+        snapshot = null;
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInteract(PlayerInteractEvent event) {
+    /** Avant tous les plugins : état du bloc cliqué et de son partenaire, que DoorsReloaded n'a pas encore bougé. */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void capture(PlayerInteractEvent event) {
+        snapshot = null;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null
-                || !(event.getClickedBlock().getBlockData() instanceof Openable openable)) {
-            return;
-        }
-        Player player = event.getPlayer();
-        if (player.hasPermission(BYPASS)) {
-            return;
-        }
-        // Accroupi avec un objet en main : le serveur pose un bloc contre la porte sans l'ouvrir
-        if (player.isSneaking() && (!player.getInventory().getItemInMainHand().isEmpty()
-                || !player.getInventory().getItemInOffHand().isEmpty())) {
+                || !(event.getClickedBlock().getBlockData() instanceof Openable)) {
             return;
         }
         Block clicked = event.getClickedBlock();
-        boolean resetHere = worlds.contains(clicked.getWorld().getName());
-        BlockData before = clicked.getBlockData().clone();
-
-        if (partnerSync && (resetHere || !partnerOnlyInWorlds)) {
-            Block partner = findPartner(clicked, openable, before);
-            if (partner != null && partner.getBlockData() instanceof Openable partnerData) {
-                BlockData partnerBefore = partnerData.clone();
-                // La porte cliquée va changer d'état : la partenaire prend le même
-                boolean open = !openable.isOpen();
-                if (partnerData.isOpen() != open) {
-                    partnerData.setOpen(open);
-                    partner.setBlockData(partnerData, true);
-                    if (resetHere) {
-                        schedule(partner, partnerBefore);
-                    }
-                }
-            }
+        if (clicked.getType() == Material.IRON_DOOR || clicked.getType() == Material.IRON_TRAPDOOR) {
+            return;
         }
-        if (resetHere) {
-            schedule(clicked, before);
+        Block partner = findPartner(clicked);
+        snapshot = new Snapshot(event, clicked, clicked.getBlockData().clone(), partner,
+                partner == null ? null : partner.getBlockData().clone());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInteract(PlayerInteractEvent event) {
+        Snapshot shot = snapshot;
+        snapshot = null;
+        if (shot == null || shot.event() != event) {
+            return;
+        }
+        Player player = event.getPlayer();
+        // Accroupi avec un objet en main : le serveur pose un bloc contre la porte sans l'ouvrir
+        if (has(player, "bypass") || player.isSneaking() && (!player.getInventory().getItemInMainHand().isEmpty()
+                || !player.getInventory().getItemInOffHand().isEmpty())) {
+            return;
+        }
+        boolean resetHere = worlds.contains(shot.clicked().getWorld().getName());
+        boolean pairEnabled = shot.clickedBefore() instanceof TrapDoor ? pairTrapdoors : pairDoors;
+        if (shot.partner() != null && pairEnabled && (resetHere || !pairsOnlyInWorlds)) {
+            // Le bloc cliqué va basculer : son partenaire prend le même état
+            Openable partner = (Openable) shot.partnerBefore().clone();
+            partner.setOpen(!((Openable) shot.clickedBefore()).isOpen());
+            shot.partner().setBlockData(partner, true);
+        }
+        if (!resetHere) {
+            return;
+        }
+        schedule(shot.clicked(), shot.clickedBefore());
+        if (shot.partner() != null) {
+            schedule(shot.partner(), shot.partnerBefore());
         }
     }
 
@@ -139,21 +151,28 @@ public final class DoorReset extends Module {
         BlockData target = previous != null ? previous.initial() : before;
         BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             pending.remove(location);
-            if (location.getWorld() == null) {
-                return;
-            }
-            Block current = location.getBlock();
-            if (current.getType() == target.getMaterial() && !current.getBlockData().matches(target)) {
-                current.setBlockData(target, true);
-                playSound(current, target);
-            }
+            revert(location, target, true);
         }, delayTicks);
         pending.put(location, new Pending(task, target));
     }
 
-    /** Partenaire d'une double porte (partie basse) ou trappe voisine de même type, dans le même état avant le clic. */
-    private static Block findPartner(Block clicked, Openable data, BlockData before) {
-        boolean wasOpen = ((Openable) before).isOpen();
+    /** Remet le bloc dans son état d'avant s'il est toujours du même type et a changé. */
+    private static void revert(Location location, BlockData target, boolean sound) {
+        if (location.getWorld() == null || !location.isChunkLoaded()) {
+            return;
+        }
+        Block block = location.getBlock();
+        if (block.getType() == target.getMaterial() && !block.getBlockData().matches(target)) {
+            block.setBlockData(target, true);
+            if (sound) {
+                playSound(block, target);
+            }
+        }
+    }
+
+    /** Partenaire d'une double porte (partie basse) ou trappe voisine de même type, dans le même état. */
+    private static Block findPartner(Block clicked) {
+        BlockData data = clicked.getBlockData();
         if (data instanceof Door door) {
             Block bottom = clicked;
             if (door.getHalf() == Bisected.Half.TOP) {
@@ -168,25 +187,17 @@ public final class DoorReset extends Module {
                     continue;
                 }
                 Block candidate = bottom.getRelative(rule.dx(), 0, rule.dz());
-                if (candidate.getType() != bottom.getType() || !(candidate.getBlockData() instanceof Door other)) {
-                    continue;
-                }
-                if (other.getHalf() == Bisected.Half.TOP) {
-                    candidate = candidate.getRelative(BlockFace.DOWN);
-                    if (candidate.getType() != bottom.getType() || !(candidate.getBlockData() instanceof Door lowerOther)) {
-                        continue;
-                    }
-                    other = lowerOther;
-                }
-                if (other.getFacing() == door.getFacing() && other.getHinge() != door.getHinge() && other.isOpen() == wasOpen) {
+                if (candidate.getType() == bottom.getType() && candidate.getBlockData() instanceof Door other
+                        && other.getHalf() == Bisected.Half.BOTTOM && other.getFacing() == door.getFacing()
+                        && other.getHinge() != door.getHinge() && other.isOpen() == door.isOpen()) {
                     return candidate;
                 }
             }
-        } else if (data instanceof TrapDoor) {
-            for (BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+        } else if (data instanceof TrapDoor trapDoor) {
+            for (BlockFace face : SIDES) {
                 Block candidate = clicked.getRelative(face);
                 if (candidate.getType() == clicked.getType() && candidate.getBlockData() instanceof TrapDoor other
-                        && other.isOpen() == wasOpen) {
+                        && other.isOpen() == trapDoor.isOpen()) {
                     return candidate;
                 }
             }

@@ -3,51 +3,44 @@
 # ============================================================================
 #
 #  Chaque réglage est un module qui s'active ou se coupe avec « enabled ».
+#  Le nom du module sert aussi dans messages.yml et dans ses permissions
+#  (shtweaks.<module>.<permission>).
 #
 #  Modules :
-#    indestructible-items  Items au sol indestructibles (lave, feu, explosions)
-#    stacked-sheep         Pas de tonte des moutons stackés (WildStacker)
-#    infinite-anvils       Enclumes qui ne s'abîment pas dans certains mondes
-#    twerk-crops           S'accroupir fait pousser les cultures proches
-#    sculk-confirm         Confirmation avant de casser un catalyseur de sculk
-#    amethyst-nerf         Quantité d'éclats d'améthyste par grappe
-#    villagers             Villageois sans IA, sans commerce ni reproduction
-#    sign-edit             Modifier une pancarte écrite : VIP, sur son île
-#    door-reset            Portes et trappes qui se referment seules
+#    items     Items au sol insensibles à la lave, au feu et aux explosions
+#    anvils    Enclumes qui ne s'usent pas dans certains mondes
+#    crops     S'accroupir fait pousser les cultures proches
+#    sculk     Confirmation avant de casser un catalyseur de sculk
+#    amethyst  Nombre d'éclats lâchés par une grappe d'améthyste
+#    signedit  Modifier une pancarte déjà écrite : VIP, sur son île
+#    doors     Portes, trappes et portillons qui reprennent leur état ; doubles portes
 #
 #  Commandes :
 #    /shtweaks reload   Recharge config.yml et messages.yml, relance les modules.
 #    /shtweaks modules  Liste les modules et leur état.
 #
 #  Permissions :
-#    shtweaks.admin          /shtweaks (op par défaut)
-#    shsignedit.use          Modifier une pancarte déjà écrite sur son île
-#    shsignedit.bypass       Modifier toutes les pancartes, partout
-#    shinteractreset.bypass  Les portes et trappes ne se referment pas
-#
-#  Les messages des modules sont dans messages.yml.
+#    shtweaks.admin            /shtweaks (op par défaut)
+#    shtweaks.signedit.use     Modifier une pancarte déjà écrite sur son île
+#    shtweaks.signedit.bypass  Modifier toutes les pancartes, partout
+#    shtweaks.doors.bypass     Ce que le joueur ouvre ne reprend pas son état
 # ============================================================================
 
 modules:
 
-  indestructible-items:
+  items:
     enabled: true
-    # Items qui restent destructibles (le cactus détruit les items, c'est voulu).
+    # Items qui restent destructibles (un cactus récolté sur un cactus disparaît, comme en vanilla).
     excluded:
       - CACTUS
 
-  stacked-sheep:
-    # Nécessite WildStacker : bloque les cisailles (main et distributeur) sur un
-    # mouton qui en représente plusieurs.
-    enabled: true
-
-  infinite-anvils:
+  anvils:
     enabled: true
     # Mondes où les enclumes ne s'usent jamais.
     worlds:
       - spawn
 
-  twerk-crops:
+  crops:
     enabled: true
     # Rayon horizontal, en blocs, autour du joueur (une couche au-dessus et en dessous).
     radius: 2
@@ -55,64 +48,59 @@ modules:
     chance: 35
     # Délai minimal, en millisecondes, après un accroupissement qui a fait pousser quelque chose.
     cooldown-ms: 500
-    # Cultures jamais accélérées (noms de blocs, ex. WHEAT, NETHER_WART).
-    excluded-blocks:
-    #  - WHEAT
+    # Blocs accélérés. Canne à sucre et cactus : l'âge monte, le bloc suivant pousse ensuite.
+    crops:
+      - WHEAT
+      - CARROTS
+      - POTATOES
+      - BEETROOTS
+      - NETHER_WART
+      - COCOA
+      - MELON_STEM
+      - PUMPKIN_STEM
+      - SWEET_BERRY_BUSH
+      - TORCHFLOWER_CROP
+      - PITCHER_CROP
+      - SUGAR_CANE
+      - CACTUS
     # Mondes où le module ne fait rien.
     excluded-worlds:
       - spawn
       - arene
       - Revent
 
-  sculk-confirm:
+  sculk:
     enabled: true
-    # Délai, en secondes, pour recasser le catalyseur et confirmer.
+    # Délai, en secondes, pour recasser le même catalyseur et confirmer.
     confirmation-seconds: 10
 
-  amethyst-nerf:
+  amethyst:
     enabled: true
     # Éclats lâchés par une grappe cassée sans Toucher de soie (tirés entre min et max).
     min-drops: 1
     max-drops: 1
     # Fortune ajoute son niveau à la quantité, sans dépasser max-drops.
     fortune-affects-amount: false
-    # Envoyer le message amethyst-break de messages.yml à chaque grappe cassée.
+    # Envoyer le message amethyst.break à chaque grappe cassée.
     send-message: false
 
-  villagers:
-    enabled: true
-    # Les villageois zombies ne peuvent plus être soignés.
-    prevent-zombie-curing: true
-    # Villageois sans IA : ils ne bougent plus.
-    no-ai: true
-    # Commerce désactivé (villageois et marchand ambulant).
-    disable-trading: true
-    disable-breeding: true
-    prevent-item-pickup: true
-    silent: false
-    prevent-profession-change: true
-    # Plus de nouveaux échanges (montée de niveau, réapprovisionnement).
-    prevent-new-trades: true
-    invulnerable: false
-    prevent-door-opening: false
-    # Les villageois n'appellent plus de golem de fer.
-    prevent-golem-spawning: true
-
-  sign-edit:
+  signedit:
     enabled: true
     # Mondes où la règle s'applique ; ailleurs, seule la permission bypass permet d'éditer.
     worlds:
       - SuperiorWorld
 
-  door-reset:
+  doors:
     enabled: true
     # Délai, en secondes, avant qu'une porte, une trappe ou un portillon reprenne son état.
     delay-seconds: 3
     worlds:
       - spawn
       - arene
-    partner-sync:
-      # Une double porte ou deux trappes côte à côte s'ouvrent ensemble.
-      enabled: true
+    pairs:
+      # Les deux battants d'une double porte s'ouvrent ensemble.
+      doors: true
+      # Deux trappes identiques côte à côte s'ouvrent ensemble.
+      trapdoors: true
       # true : seulement dans les mondes ci-dessus ; false : partout.
       only-in-worlds: false

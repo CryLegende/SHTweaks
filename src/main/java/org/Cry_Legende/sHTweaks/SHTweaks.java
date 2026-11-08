@@ -1,14 +1,12 @@
 package org.Cry_Legende.sHTweaks;
 
-import org.Cry_Legende.sHTweaks.modules.AmethystNerf;
-import org.Cry_Legende.sHTweaks.modules.DoorReset;
-import org.Cry_Legende.sHTweaks.modules.IndestructibleItems;
-import org.Cry_Legende.sHTweaks.modules.InfiniteAnvils;
-import org.Cry_Legende.sHTweaks.modules.SculkConfirm;
-import org.Cry_Legende.sHTweaks.modules.SignEdit;
-import org.Cry_Legende.sHTweaks.modules.StackedSheep;
-import org.Cry_Legende.sHTweaks.modules.TwerkCrops;
-import org.Cry_Legende.sHTweaks.modules.Villagers;
+import org.Cry_Legende.sHTweaks.modules.AmethystModule;
+import org.Cry_Legende.sHTweaks.modules.AnvilsModule;
+import org.Cry_Legende.sHTweaks.modules.CropsModule;
+import org.Cry_Legende.sHTweaks.modules.DoorsModule;
+import org.Cry_Legende.sHTweaks.modules.ItemsModule;
+import org.Cry_Legende.sHTweaks.modules.SculkModule;
+import org.Cry_Legende.sHTweaks.modules.SignEditModule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -26,24 +24,23 @@ import java.util.function.Supplier;
 public class SHTweaks extends JavaPlugin implements TabCompleter {
 
     /**
-     * Module connu du plugin.
+     * Module connu du plugin. Son nom sert de clé dans config.yml et messages.yml, et de segment
+     * dans ses permissions (shtweaks.&lt;module&gt;.&lt;permission&gt;).
      *
      * @param requiredPlugin plugin sans lequel le module reste coupé, ou null
-     * @param factory        créé seulement si le plugin requis est là (ses classes ne sont pas chargées sinon)
+     * @param factory        appelé seulement si le plugin requis est là (ses classes ne sont pas chargées sinon)
      */
     private record Entry(String id, String requiredPlugin, Supplier<Module> factory) {
     }
 
     private static final List<Entry> ENTRIES = List.of(
-            new Entry("indestructible-items", null, IndestructibleItems::new),
-            new Entry("stacked-sheep", "WildStacker", StackedSheep::new),
-            new Entry("infinite-anvils", null, InfiniteAnvils::new),
-            new Entry("twerk-crops", null, TwerkCrops::new),
-            new Entry("sculk-confirm", null, SculkConfirm::new),
-            new Entry("amethyst-nerf", null, AmethystNerf::new),
-            new Entry("villagers", null, Villagers::new),
-            new Entry("sign-edit", "SuperiorSkyblock2", SignEdit::new),
-            new Entry("door-reset", null, DoorReset::new));
+            new Entry("items", null, ItemsModule::new),
+            new Entry("anvils", null, AnvilsModule::new),
+            new Entry("crops", null, CropsModule::new),
+            new Entry("sculk", null, SculkModule::new),
+            new Entry("amethyst", null, AmethystModule::new),
+            new Entry("signedit", "SuperiorSkyblock2", SignEditModule::new),
+            new Entry("doors", null, DoorsModule::new));
 
     private final Map<String, Module> active = new LinkedHashMap<>();
     private Messages messages;
@@ -86,7 +83,7 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             }
             try {
                 Module module = entry.factory().get();
-                module.enable(this, section);
+                module.enable(this, entry.id(), section);
                 active.put(entry.id(), module);
             } catch (RuntimeException e) {
                 getLogger().severe("Module " + entry.id() + " coupé, erreur au démarrage : " + e);
@@ -108,7 +105,7 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("shtweaks.admin")) {
-            messages.send(sender, "no-permission");
+            messages.send(sender, "command.no-permission");
             return true;
         }
         String action = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "";
@@ -116,21 +113,21 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             case "reload" -> {
                 stopModules();
                 startModules();
-                messages.send(sender, "reloaded", "active", String.valueOf(active.size()), "total", String.valueOf(ENTRIES.size()));
+                messages.send(sender, "command.reloaded", "active", String.valueOf(active.size()), "total", String.valueOf(ENTRIES.size()));
             }
             case "modules" -> {
-                messages.send(sender, "modules-header");
+                messages.send(sender, "command.modules-header");
                 for (Entry entry : ENTRIES) {
                     if (active.containsKey(entry.id())) {
-                        messages.send(sender, "module-line-on", "module", entry.id());
+                        messages.send(sender, "command.module-on", "module", entry.id());
                     } else if (entry.requiredPlugin() != null && !getServer().getPluginManager().isPluginEnabled(entry.requiredPlugin())) {
-                        messages.send(sender, "module-line-missing", "module", entry.id(), "plugin", entry.requiredPlugin());
+                        messages.send(sender, "command.module-missing", "module", entry.id(), "plugin", entry.requiredPlugin());
                     } else {
-                        messages.send(sender, "module-line-off", "module", entry.id());
+                        messages.send(sender, "command.module-off", "module", entry.id());
                     }
                 }
             }
-            default -> messages.send(sender, "admin-usage");
+            default -> messages.send(sender, "command.usage");
         }
         return true;
     }

@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Nombre d'éclats d'améthyste lâchés par une grappe cassée sans Toucher de soie.
  * Priorité HIGH : SHTPDrops (HIGHEST) ramasse ensuite la liste modifiée.
  */
-public final class AmethystNerf extends Module {
+public final class AmethystModule extends Module {
 
     private int minDrops;
     private int maxDrops;
@@ -55,16 +55,15 @@ public final class AmethystNerf extends Module {
         } else {
             Item shards = items.stream().filter(item -> item.getItemStack().getType() == Material.AMETHYST_SHARD).findFirst().orElse(null);
             if (shards == null) {
-                plugin.getLogger().warning("Grappe d'améthyste cassée par " + player.getName() + " sans éclat à modifier.");
                 return;
             }
             // Le premier item d'éclats est réutilisé avec la nouvelle quantité, les autres drops disparaissent
-            shards.setItemStack(new ItemStack(Material.AMETHYST_SHARD, amount));
+            shards.setItemStack(ItemStack.of(Material.AMETHYST_SHARD, amount));
             items.clear();
             items.add(shards);
         }
         if (sendMessage) {
-            plugin.messages().send(player, "amethyst-break", "amount", String.valueOf(Math.max(0, amount)));
+            send(player, "break", "amount", String.valueOf(amount));
         }
     }
 }

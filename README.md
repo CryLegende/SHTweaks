@@ -18,23 +18,23 @@ Chaque réglage est un module qui s'active ou se coupe dans `config.yml` et se r
 
 | Module | Effet | Remplace |
 |---|---|---|
-| `indestructible-items` | Items au sol indestructibles (lave, feu, explosions), sauf ceux exclus | SHNoLavaBurn |
-| `stacked-sheep` | Pas de tonte des moutons stackés, à la main ou au distributeur (WildStacker) | SHNoShearStacked |
-| `infinite-anvils` | Enclumes qui ne s'usent pas dans certains mondes | SHInfiniteAnvil |
-| `twerk-crops` | S'accroupir fait pousser les cultures proches | SHTwerkCrops |
-| `sculk-confirm` | Confirmation avant de casser un catalyseur de sculk sans Toucher de soie | SHVerifSculk |
-| `amethyst-nerf` | Quantité d'éclats lâchés par une grappe d'améthyste | SHNerfAmethyst |
-| `villagers` | Villageois sans IA, sans commerce, sans reproduction ni golems | SHVillagerNerf |
-| `sign-edit` | Modifier une pancarte déjà écrite : VIP, sur son île | SHSignEdit |
-| `door-reset` | Portes, trappes et portillons qui reprennent leur état, doubles portes synchronisées | SHInteractReset |
+| `items` | Items au sol insensibles à la lave, au feu et aux explosions, sauf ceux exclus | SHNoLavaBurn |
+| `anvils` | Enclumes qui ne s'usent pas dans certains mondes | SHInfiniteAnvil |
+| `crops` | S'accroupir fait pousser les cultures listées | SHTwerkCrops |
+| `sculk` | Second coup demandé avant de casser un catalyseur de sculk sans Toucher de soie | SHVerifSculk |
+| `amethyst` | Nombre d'éclats lâchés par une grappe d'améthyste | SHNerfAmethyst |
+| `signedit` | Modifier une pancarte déjà écrite : VIP, sur son île | SHSignEdit |
+| `doors` | Portes, trappes et portillons qui reprennent leur état ; doubles portes et trappes voisines ouvertes ensemble | SHInteractReset |
 
-Les permissions des anciens plugins sont gardées telles quelles (`shsignedit.use`, `shsignedit.bypass`, `shinteractreset.bypass`).
+Permissions au format `shtweaks.<module>.<permission>` : `shtweaks.signedit.use`, `shtweaks.signedit.bypass`, `shtweaks.doors.bypass`.
+
+Remplacés par des réglages natifs plutôt que par un module : la tonte des moutons stackés (WildStacker `stack-split.SHEEP_SHEAR: true`, ex-SHNoShearStacked) et le comportement des villageois (Purpur `allow-trading`, `can-breed`, `cure`, ex-SHVillagerNerf).
 
 Utilisé sur : **Opale**.
 
 ## Dépendances
 
-Optionnelles : `WildStacker` (module `stacked-sheep`), `SuperiorSkyblock2` (module `sign-edit`). Sans eux, le module concerné reste coupé.
+Optionnelle : `SuperiorSkyblock2` (module `signedit`, coupé sans lui).
 
 ## Commandes
 
