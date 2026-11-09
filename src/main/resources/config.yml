@@ -17,6 +17,10 @@
 #    islandbypass  Mode bypass des îles (/is admin bypass) activé à la connexion
 #                  pour ceux qui ont superior.admin.bypass ; le couper tient
 #                  jusqu'au prochain redémarrage
+#    redstone  Relance la redstone que SuperiorSkyblock2 a bloquée pendant que
+#              l'île n'avait aucun membre connecté (disable-redstone-offline) :
+#              répéteurs, comparateurs, observateurs, torches, poudre, lampes,
+#              rails, ampoules, portes, trappes et portillons
 #
 #  Commandes :
 #    /shtweaks reload   Recharge config.yml et messages.yml, relance les modules.
@@ -110,3 +114,12 @@ modules:
 
   islandbypass:
     enabled: true
+
+  redstone:
+    enabled: true
+    # Délai, en ticks, entre deux recherches de blocs à relancer sur les îles redevenues actives.
+    interval-ticks: 20
+    # Blocs retenus au maximum par chunk ; au-delà, les suivants ne sont pas relancés.
+    max-per-chunk: 1024
+    # Écrire dans la console le nombre de blocs relancés.
+    log: true
