@@ -20,6 +20,10 @@ signedit:
   vip-required: '&7&l« &c&lSH &8&l» &7Grade &cVIP &7requis pour modifier les pancartes.'
   not-your-island: '&7&l« &c&lSH &8&l» &7Vous devez être sur &cvotre île &7pour modifier les pancartes.'
 
+islandbypass:
+  # Mode bypass activé à la connexion.
+  enabled: '&7&l« &e&lSH &8&l» &7Mode bypass &aACTIVÉ &7automatiquement. &e/is admin bypass &7pour le couper.'
+
 command:
   no-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission &7d''utiliser cette commande.'
   usage: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shtweaks reload &7ou &e/shtweaks modules'

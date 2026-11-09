@@ -14,6 +14,9 @@
 #    amethyst  Nombre d'éclats lâchés par une grappe d'améthyste
 #    signedit  Modifier une pancarte déjà écrite : VIP, sur son île
 #    doors     Portes, trappes et portillons qui reprennent leur état ; doubles portes
+#    islandbypass  Mode bypass des îles (/is admin bypass) activé à la connexion
+#                  pour ceux qui ont superior.admin.bypass ; le couper tient
+#                  jusqu'au prochain redémarrage
 #
 #  Commandes :
 #    /shtweaks reload   Recharge config.yml et messages.yml, relance les modules.
@@ -104,3 +107,6 @@ modules:
       trapdoors: true
       # true : seulement dans les mondes ci-dessus ; false : partout.
       only-in-worlds: false
+
+  islandbypass:
+    enabled: true
