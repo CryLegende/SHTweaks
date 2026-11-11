@@ -33,7 +33,8 @@ import java.util.logging.Level;
  * <p>
  * Une île est recalculée quelques secondes après la connexion d'un de ses membres. Avec {@code offline}, les autres
  * le sont aussi, une à une, de la plus haute à la plus basse : SuperiorSkyblock2 refuse de recalculer une île sans
- * membre connecté, elle est donc marquée active le temps du calcul. Les îles faites sont notées dans recount.yml :
+ * membre connecté, elle est donc marquée active le temps du calcul, puis rendue inactive avec sa date de dernière
+ * activité d'origine. Les îles faites sont notées dans recount.yml :
  * effacer ce fichier relance un passage complet.
  */
 public final class RecountModule extends Module {
@@ -168,6 +169,8 @@ public final class RecountModule extends Module {
         dirty = true;
         BigDecimal before = island.getIslandLevel();
         boolean forced = !island.isCurrentlyActive();
+        // Le recalcul date l'île de maintenant : une île inactive garde sa vraie date de dernière activité.
+        long lastTimeUpdate = island.getLastTimeUpdate();
         if (forced) {
             island.setCurrentlyActive(true);
         }
@@ -182,6 +185,7 @@ public final class RecountModule extends Module {
             }
             if (forced && noMemberOnline(island)) {
                 island.setCurrentlyActive(false);
+                island.setLastTimeUpdate(lastTimeUpdate);
             }
             BigDecimal after = island.getIslandLevel();
             recounted++;
