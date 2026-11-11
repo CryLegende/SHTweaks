@@ -24,9 +24,26 @@ islandbypass:
   # Mode bypass activé à la connexion.
   enabled: '&7&l« &e&lSH &8&l» &7Mode bypass &aACTIVÉ &7automatiquement. &e/is admin bypass &7pour le couper.'
 
+sellwandconfirm:
+  # Envoyé au joueur qui clique avec la sell wand : il doit cliquer à nouveau sur le même coffre pour vendre.
+  # {price} : prix total de la vente, multiplicateur compris.
+  confirmation: '&7&l« &e&lSH &8&l» &7Cliquez à nouveau sur le même coffre pour confirmer la vente de son contenu pour &e{price} SHCoins'
+
+lavawarn:
+  # Envoyé aux joueurs proches quand de la lave se transforme en obsidienne ; \n : retour à la ligne.
+  # {x} {y} {z} : coordonnées du bloc d'obsidienne.
+  warning: "&7&l« &6&lSH &8&l» &fDe la lave a été transformé en obsidienne\n&7Rappel: Faire un clic droit sur l'obsidienne avec un seau vide permet de la retransformer en lave ! (enlevez l'eau avant)"
+
+kittycannon:
+  no-permission: 'Vous n''avez pas la permission d''utiliser cette commande.'
+  player-only: 'Seul un joueur peut exécuter cette commande.'
+
 command:
   no-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission &7d''utiliser cette commande.'
-  usage: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shtweaks reload &7ou &e/shtweaks modules'
+  # /shtweaks sans argument ou avec une sous-commande inconnue. {subcommands} : celles que l'expéditeur peut utiliser
+  usage-line: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shtweaks &7<&e{subcommands}&7>'
+  # /shtweaks reload : un fichier est illisible, rien n'a changé. {file} : fichier, {error} : première ligne de l'erreur
+  reload-error: '&7&l« &c&lSH &8&l» &7Rechargement annulé, &c{file} &7est illisible : &c{error}'
   reloaded: '&7&l« &a&lSH &8&l» &7Configuration rechargée : &a{active}/{total} modules &7actifs.'
   modules-header: '&7&l« &e&lSH &8&l» &7Modules de SHTweaks :'
   module-on: '&8 • &a{module} &7actif'

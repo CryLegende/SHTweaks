@@ -27,9 +27,16 @@ Chaque réglage est un module qui s'active ou se coupe dans `config.yml` et se r
 | `doors` | Portes, trappes et portillons qui reprennent leur état ; doubles portes et trappes voisines ouvertes ensemble | SHInteractReset |
 | `islandbypass` | Mode bypass des îles activé à la connexion pour ceux qui ont `superior.admin.bypass` ; le couper tient jusqu'au prochain redémarrage | — |
 | `redstone` | Relance la redstone que SuperiorSkyblock2 a bloquée sur une île sans membre connecté (`disable-redstone-offline`) : sans lui, répéteurs, comparateurs, torches et horloges restent figés au retour du joueur | — |
+| `sellwandconfirm` | Confirmation avant de vendre le contenu d'un coffre avec la sell wand de WildTools : un premier clic affiche le prix, un second clic sur le même coffre lance la vente | SHWildToolsConfirm |
+| `lavawarn` | Prévient les joueurs proches quand de la lave se transforme en obsidienne (message et son, dans un rayon) | SHLavaWarn |
+| `ambientsounds` | Sons d'ambiance joués à intervalles réguliers ou aléatoires à une position d'un monde | SHAmbiantSounds |
+| `playerinteract` | Shift + clic droit sur un joueur : lance les commandes réglées, dans les mondes autorisés et hors des régions WorldGuard interdites | SHPlayerInteract |
+| `kittycannon` | `/kittycannon` lance un chat qui explose | SHKittycannon |
 | `recount` | Recalcule une fois chaque île (comptes de blocs et niveau remis d'accord avec ce qui est posé), pendant qu'un de ses membres s'y trouve, une île à la fois et jamais quand le serveur rame ; îles faites dans `recount.yml` | — |
 
-Permissions au format `shtweaks.<module>.<permission>` : `shtweaks.signedit.use`, `shtweaks.signedit.bypass`, `shtweaks.doors.bypass`.
+Les cinq derniers modules viennent d'anciens plugins : sans section dans `config.yml`, ils tournent avec les réglages de la fin du fichier du jar.
+
+Permissions au format `shtweaks.<module>.<permission>` : `shtweaks.signedit.use`, `shtweaks.signedit.bypass`, `shtweaks.doors.bypass`, `shtweaks.playerinteract.use`, `shtweaks.kittycannon.use`.
 
 Remplacés par des réglages natifs plutôt que par un module : la tonte des moutons stackés (WildStacker `stack-split.SHEEP_SHEAR: true`, ex-SHNoShearStacked) et le comportement des villageois (Purpur `allow-trading`, `can-breed`, `cure`, ex-SHVillagerNerf).
 
@@ -37,14 +44,17 @@ Utilisé sur : **Opale**.
 
 ## Dépendances
 
-Optionnelle : `SuperiorSkyblock2` (modules `signedit`, `islandbypass`, `redstone` et `recount`, coupés sans lui).
+Optionnelles : `SuperiorSkyblock2` (modules `signedit`, `islandbypass`, `redstone` et `recount`, coupés sans lui), `WildTools` (module `sellwandconfirm`), `WorldGuard` (module `playerinteract`), `Essentials` (SHTweaks se charge après lui pour garder `/kittycannon`).
 
 ## Commandes
 
 | Commande | Permission | Effet |
 |---|---|---|
-| `/shtweaks reload` | `shtweaks.admin` (op) | Recharge les fichiers et relance les modules |
-| `/shtweaks modules` | `shtweaks.admin` (op) | Liste les modules et leur état |
+| `/shtweaks reload` | `shtweaks.admin.reload` (op) | Recharge les fichiers et relance les modules ; un fichier illisible ne change rien |
+| `/shtweaks modules` | `shtweaks.admin.modules` (op) | Liste les modules et leur état |
+| `/kittycannon` | `shtweaks.kittycannon.use` (op) | Module `kittycannon` : lance un chat qui explose |
+
+`shtweaks.admin` donne toutes les sous-commandes de `/shtweaks`.
 
 ## Configuration
 

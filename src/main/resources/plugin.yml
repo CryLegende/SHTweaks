@@ -4,16 +4,30 @@ main: org.Cry_Legende.sHTweaks.SHTweaks
 api-version: '1.20'
 author: Cry_Legende
 description: Petits réglages de gameplay d'Opale, un module par réglage.
-softdepend: [SuperiorSkyblock2]
+# Essentials : SHTweaks se charge après lui, ce qui lui laisse /kittycannon (module kittycannon).
+softdepend: [SuperiorSkyblock2, WildTools, WorldGuard, Essentials]
 
 commands:
   shtweaks:
     description: Administration de SHTweaks.
     usage: /<command> <reload|modules>
+  kittycannon:
+    description: Lance un chat qui explose.
+    usage: /kittycannon
+    permission: shtweaks.kittycannon.use
 
 permissions:
   shtweaks.admin:
-    description: Recharger la configuration et lister les modules.
+    description: Toutes les sous-commandes de /shtweaks (reload, modules).
+    default: op
+    children:
+      shtweaks.admin.reload: true
+      shtweaks.admin.modules: true
+  shtweaks.admin.reload:
+    description: Recharger config.yml et messages.yml et relancer les modules (/shtweaks reload).
+    default: op
+  shtweaks.admin.modules:
+    description: Lister les modules et leur état (/shtweaks modules).
     default: op
   shtweaks.signedit.use:
     description: Modifier une pancarte déjà écrite sur son île.
@@ -23,4 +37,10 @@ permissions:
     default: op
   shtweaks.doors.bypass:
     description: Les portes, trappes et portillons ouverts ne reprennent pas leur état.
+    default: op
+  shtweaks.playerinteract.use:
+    description: Shift + clic droit sur un autre joueur pour lancer les commandes du module playerinteract.
+    default: op
+  shtweaks.kittycannon.use:
+    description: Permet d'utiliser la commande /kittycannon.
     default: op

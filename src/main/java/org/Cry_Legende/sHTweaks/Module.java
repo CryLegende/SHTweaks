@@ -32,6 +32,11 @@ public abstract class Module implements Listener {
         plugin.messages().send(to, id + "." + key, replacements);
     }
 
+    /** Vrai quand le module démarre à cause de /shtweaks reload, sur un serveur qui tourne. */
+    protected final boolean reloading() {
+        return plugin.isReloading();
+    }
+
     /** Clé de configuration complète, pour les avertissements. */
     protected final String path(String key) {
         return "modules." + id + "." + key;
