@@ -1,5 +1,6 @@
 package org.Cry_Legende.sHTweaks.modules;
 
+import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import org.Cry_Legende.sHTweaks.Module;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -16,7 +17,8 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Nombre d'éclats d'améthyste lâchés par une grappe cassée sans Toucher de soie.
+ * Nombre d'éclats d'améthyste lâchés par une grappe cassée sans Toucher de soie, par un joueur
+ * comme par un bloc (piston, liquide).
  * Priorité HIGH : SHTPDrops (HIGHEST) ramasse ensuite la liste modifiée.
  */
 public final class AmethystModule extends Module {
@@ -44,7 +46,7 @@ public final class AmethystModule extends Module {
         if (player.getGameMode() == GameMode.CREATIVE || tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
             return;
         }
-        int amount = minDrops == maxDrops ? minDrops : ThreadLocalRandom.current().nextInt(minDrops, maxDrops + 1);
+        int amount = roll();
         if (fortuneAffectsAmount) {
             amount = Math.min(amount + tool.getEnchantmentLevel(Enchantment.FORTUNE), maxDrops);
         }
@@ -65,5 +67,26 @@ public final class AmethystModule extends Module {
         if (sendMessage) {
             send(player, "break", "amount", String.valueOf(amount));
         }
+    }
+
+    /** Grappe cassée par un piston ou un liquide : même quantité que cassée à la main, sans Fortune. */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onClusterBrokenByBlock(BlockBreakBlockEvent event) {
+        if (event.getBlock().getType() != Material.AMETHYST_CLUSTER) {
+            return;
+        }
+        List<ItemStack> drops = event.getDrops();
+        if (drops.stream().noneMatch(drop -> drop.getType() == Material.AMETHYST_SHARD)) {
+            return;
+        }
+        int amount = roll();
+        drops.clear();
+        if (amount > 0) {
+            drops.add(ItemStack.of(Material.AMETHYST_SHARD, amount));
+        }
+    }
+
+    private int roll() {
+        return minDrops == maxDrops ? minDrops : ThreadLocalRandom.current().nextInt(minDrops, maxDrops + 1);
     }
 }

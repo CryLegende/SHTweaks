@@ -11,7 +11,8 @@
 #    anvils    Enclumes qui ne s'usent pas dans certains mondes
 #    crops     S'accroupir fait pousser les cultures proches
 #    sculk     Confirmation avant de casser un catalyseur de sculk
-#    amethyst  Nombre d'éclats lâchés par une grappe d'améthyste
+#    amethyst  Nombre d'éclats lâchés par une grappe d'améthyste, cassée par un
+#              joueur, un piston ou un liquide
 #    signedit  Modifier une pancarte déjà écrite : VIP, sur son île
 #    doors     Portes, trappes et portillons qui reprennent leur état ; doubles portes
 #    islandbypass  Mode bypass des îles (/is admin bypass) activé à la connexion
