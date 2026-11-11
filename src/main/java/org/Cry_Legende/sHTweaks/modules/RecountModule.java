@@ -2,14 +2,10 @@ package org.Cry_Legende.sHTweaks.modules;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import com.bgsoftware.superiorskyblock.api.island.Island;
-import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
 import org.Cry_Legende.sHTweaks.Module;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
@@ -17,58 +13,42 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 /**
  * Recalcule une fois chaque île pour remettre ses comptes de blocs d'accord avec ce qui est réellement posé.
  * <p>
- * Une île est recalculée quelques secondes après la connexion d'un de ses membres. Avec {@code offline}, les autres
- * le sont aussi, une à une, de la plus haute à la plus basse : SuperiorSkyblock2 refuse de recalculer une île sans
- * membre connecté, elle est donc marquée active le temps du calcul, puis rendue inactive avec sa date de dernière
- * activité d'origine. Les îles faites sont notées dans recount.yml :
- * effacer ce fichier relance un passage complet.
+ * Une île n'est recalculée que pendant qu'un de ses membres s'y trouve : ses chunks sont alors déjà chargés, comme
+ * pour un /is level fait sur place. Recalculer une île sans personne dessus charge tous ses chunks d'un coup et fait
+ * tourner ses fermes (essai du 2026-11-11 sur backopale : serveur figé). Une seule île à la fois, et aucune quand le
+ * serveur rame. Les îles faites sont notées dans recount.yml : effacer ce fichier relance un passage complet.
  */
 public final class RecountModule extends Module {
 
     /** Délai au-delà duquel un calcul sans réponse (erreur côté SuperiorSkyblock2) est abandonné. */
     private static final long CALC_TIMEOUT_TICKS = 60 * 20L;
     private static final long SAVE_INTERVAL_TICKS = 30 * 20L;
-    private static final int PROGRESS_EVERY = 250;
 
     private final Set<UUID> done = ConcurrentHashMap.newKeySet();
     private final List<BukkitTask> tasks = new ArrayList<>();
     private File file;
-    private long delayTicks;
+    private double minTps;
     private boolean log;
-    private boolean offline;
-    private long offlineStartTicks;
-    private long offlinePauseTicks;
     private volatile boolean dirty;
-    private volatile boolean running;
-
-    private Deque<UUID> queue;
-    private int swept;
-    private int recounted;
-    private int changed;
-    private BigDecimal levelsBefore = BigDecimal.ZERO;
-    private BigDecimal levelsAfter = BigDecimal.ZERO;
+    private boolean busy;
 
     @Override
     protected void load(ConfigurationSection config) {
-        delayTicks = Math.max(0, config.getInt("delay-seconds", 10)) * 20L;
+        long intervalTicks = Math.max(1, config.getInt("interval-seconds", 10)) * 20L;
+        minTps = config.getDouble("min-tps", 18.0);
         log = config.getBoolean("log", true);
-        offline = config.getBoolean("offline", false);
-        offlineStartTicks = Math.max(1, config.getInt("offline-start-minutes", 10)) * 60L * 20L;
-        offlinePauseTicks = Math.max(1, config.getInt("offline-pause-ticks", 20));
         file = new File(plugin.getDataFolder(), "recount.yml");
         done.clear();
         for (String id : YamlConfiguration.loadConfiguration(file).getStringList("islands")) {
@@ -78,16 +58,13 @@ public final class RecountModule extends Module {
                 // ligne abîmée : l'île sera recalculée une fois de plus
             }
         }
-        running = true;
+        busy = false;
+        tasks.add(plugin.getServer().getScheduler().runTaskTimer(plugin, this::check, intervalTicks, intervalTicks));
         tasks.add(plugin.getServer().getScheduler().runTaskTimer(plugin, this::saveIfDirty, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS));
-        if (offline) {
-            tasks.add(plugin.getServer().getScheduler().runTaskLater(plugin, this::startSweep, offlineStartTicks));
-        }
     }
 
     @Override
     protected void unload() {
-        running = false;
         tasks.forEach(BukkitTask::cancel);
         tasks.clear();
         if (dirty) {
@@ -96,131 +73,60 @@ public final class RecountModule extends Module {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            if (!running || !player.isOnline()) {
-                return;
-            }
-            Island island = SuperiorSkyblockAPI.getPlayer(player).getIsland();
-            if (island != null && !island.isBeingRecalculated() && !done.contains(island.getUniqueId())) {
-                recount(island, () -> {
-                });
-            }
-        }, delayTicks);
-    }
-
-    /** File d'attente des îles pas encore faites, de la plus haute à la plus basse. */
-    private void startSweep() {
-        List<Island> islands = new ArrayList<>(SuperiorSkyblockAPI.getGrid().getIslands());
-        islands.sort(Comparator.comparing(Island::getIslandLevel).reversed());
-        queue = new ArrayDeque<>();
-        for (Island island : islands) {
-            if (!done.contains(island.getUniqueId())) {
-                queue.add(island.getUniqueId());
-            }
-        }
-        plugin.getLogger().info("Recalcul des îles : " + queue.size() + " île(s) à faire, une toutes les "
-                + offlinePauseTicks + " ticks au plus.");
-        next();
-    }
-
-    private void next() {
-        if (!running) {
+    /** Première île pas encore faite dont un membre connecté se trouve sur place. */
+    private void check() {
+        if (busy || plugin.getServer().getTPS()[0] < minTps) {
             return;
         }
-        while (!queue.isEmpty()) {
-            Island island = SuperiorSkyblockAPI.getGrid().getIslandByUUID(queue.poll());
-            if (island == null || done.contains(island.getUniqueId())) {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            Island island = SuperiorSkyblockAPI.getPlayer(player).getIsland();
+            if (island == null || done.contains(island.getUniqueId()) || island.isBeingRecalculated()
+                    || !island.isInsideRange(player.getLocation())) {
                 continue;
             }
-            if (island.isBeingRecalculated()) {
-                queue.add(island.getUniqueId());
-                break;
-            }
-            recount(island, () -> {
-                swept++;
-                if (log && swept % PROGRESS_EVERY == 0) {
-                    plugin.getLogger().info("Recalcul des îles : " + swept + " faite(s), " + queue.size() + " restante(s).");
-                }
-                tasks.add(plugin.getServer().getScheduler().runTaskLater(plugin, this::next, offlinePauseTicks));
-            });
+            recount(island);
             return;
-        }
-        if (queue.isEmpty()) {
-            plugin.getLogger().info("Recalcul des îles terminé : " + recounted + " île(s) recalculée(s) depuis le démarrage, "
-                    + changed + " niveau(x) changé(s), total " + levelsBefore.toPlainString() + " -> " + levelsAfter.toPlainString() + ".");
-            saveIfDirty();
-        } else {
-            tasks.add(plugin.getServer().getScheduler().runTaskLater(plugin, this::next, offlinePauseTicks));
         }
     }
 
-    /**
-     * Recalcule l'île puis lance {@code then} sur le thread principal. Une île sans membre connecté est marquée active
-     * le temps du calcul ; elle redevient inactive à la fin si personne ne s'est connecté entre-temps.
-     */
-    private void recount(Island island, Runnable then) {
-        if (!done.add(island.getUniqueId())) {
-            then.run();
-            return;
-        }
+    private void recount(Island island) {
+        done.add(island.getUniqueId());
         dirty = true;
+        busy = true;
         BigDecimal before = island.getIslandLevel();
-        boolean forced = !island.isCurrentlyActive();
-        // Le recalcul date l'île de maintenant : une île inactive garde sa vraie date de dernière activité.
-        long lastTimeUpdate = island.getLastTimeUpdate();
-        if (forced) {
-            island.setCurrentlyActive(true);
-        }
         AtomicBoolean finished = new AtomicBoolean();
         BukkitTask[] watchdog = new BukkitTask[1];
-        Runnable finish = () -> {
+        // SuperiorSkyblock2 n'appelle le rappel qu'en cas de réussite : sans réponse, l'île sera reprise plus tard.
+        Consumer<Boolean> finish = success -> {
             if (!finished.compareAndSet(false, true)) {
                 return;
             }
             if (watchdog[0] != null) {
                 watchdog[0].cancel();
             }
-            if (forced && noMemberOnline(island)) {
-                island.setCurrentlyActive(false);
-                island.setLastTimeUpdate(lastTimeUpdate);
+            busy = false;
+            if (!success) {
+                done.remove(island.getUniqueId());
+                return;
             }
             BigDecimal after = island.getIslandLevel();
-            recounted++;
-            levelsBefore = levelsBefore.add(before);
-            levelsAfter = levelsAfter.add(after);
-            if (before.compareTo(after) != 0) {
-                changed++;
-                if (log) {
-                    plugin.getLogger().info("Île de " + island.getOwner().getName() + " recalculée : niveau "
-                            + before.toPlainString() + " -> " + after.toPlainString());
-                }
+            if (log && before.compareTo(after) != 0) {
+                plugin.getLogger().info("Île de " + island.getOwner().getName() + " recalculée : niveau "
+                        + before.toPlainString() + " -> " + after.toPlainString());
             }
-            then.run();
         };
         watchdog[0] = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (!finished.get()) {
-                plugin.getLogger().warning("Île de " + island.getOwner().getName() + " : pas de résultat du recalcul après 60 s, île suivante.");
+                plugin.getLogger().warning("Île de " + island.getOwner().getName() + " : pas de résultat du recalcul après 60 s, reprise plus tard.");
             }
-            finish.run();
+            finish.accept(false);
         }, CALC_TIMEOUT_TICKS);
         try {
-            island.calcIslandWorth(null, () -> plugin.getServer().getScheduler().runTask(plugin, finish));
+            island.calcIslandWorth(null, () -> plugin.getServer().getScheduler().runTask(plugin, () -> finish.accept(true)));
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.WARNING, "Recalcul de l'île de " + island.getOwner().getName() + " impossible", e);
-            finish.run();
+            finish.accept(false);
         }
-    }
-
-    private static boolean noMemberOnline(Island island) {
-        for (SuperiorPlayer member : island.getIslandMembers(true)) {
-            if (member.isOnline()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private List<String> snapshot() {

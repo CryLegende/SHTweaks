@@ -21,10 +21,9 @@
 #              l'île n'avait aucun membre connecté (disable-redstone-offline) :
 #              répéteurs, comparateurs, observateurs, torches, poudre, lampes,
 #              rails, ampoules, portes, trappes et portillons
-#    recount   Recalcule une fois chaque île (à la connexion d'un de ses membres,
-#              et avec offline les autres une à une) pour remettre ses comptes
-#              de blocs (niveau d'île) d'accord avec ce qui est posé ; les îles
-#              faites sont notées dans recount.yml
+#    recount   Recalcule une fois chaque île, quand un de ses membres s'y trouve,
+#              pour remettre ses comptes de blocs (niveau d'île) d'accord avec
+#              ce qui est posé ; les îles faites sont notées dans recount.yml
 #
 #  Commandes :
 #    /shtweaks reload   Recharge config.yml et messages.yml, relance les modules.
@@ -130,13 +129,9 @@ modules:
 
   recount:
     enabled: false
-    # Secondes entre la connexion d'un membre et le recalcul de son île.
-    delay-seconds: 10
-    # Recalculer aussi les îles dont aucun membre ne se connecte, une à une, de la plus haute à la plus basse.
-    offline: false
-    # Minutes entre le démarrage du serveur et la première île recalculée hors connexion.
-    offline-start-minutes: 10
-    # Ticks de pause entre la fin d'un recalcul et le suivant.
-    offline-pause-ticks: 20
-    # Écrire dans la console chaque île recalculée, avec son niveau avant et après.
+    # Secondes entre deux recherches d'une île à recalculer (une seule île à la fois).
+    interval-seconds: 10
+    # Aucun recalcul quand le serveur tourne sous ce nombre de TPS (moyenne de la dernière minute).
+    min-tps: 18
+    # Écrire dans la console chaque île dont le niveau change, avec son niveau avant et après.
     log: true
