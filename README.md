@@ -27,6 +27,7 @@ Chaque réglage est un module qui s'active ou se coupe dans `config.yml` et se r
 | `doors` | Portes, trappes et portillons qui reprennent leur état ; doubles portes et trappes voisines ouvertes ensemble | SHInteractReset |
 | `islandbypass` | Mode bypass des îles activé à la connexion pour ceux qui ont `superior.admin.bypass` ; le couper tient jusqu'au prochain redémarrage | — |
 | `redstone` | Relance la redstone que SuperiorSkyblock2 a bloquée sur une île sans membre connecté (`disable-redstone-offline`) : sans lui, répéteurs, comparateurs, torches et horloges restent figés au retour du joueur | — |
+| `recount` | Recalcule une fois chaque île à la connexion d'un de ses membres (comptes de blocs et niveau remis d'accord avec ce qui est posé) ; îles faites dans `recount.yml` | — |
 
 Permissions au format `shtweaks.<module>.<permission>` : `shtweaks.signedit.use`, `shtweaks.signedit.bypass`, `shtweaks.doors.bypass`.
 
@@ -36,7 +37,7 @@ Utilisé sur : **Opale**.
 
 ## Dépendances
 
-Optionnelle : `SuperiorSkyblock2` (modules `signedit`, `islandbypass` et `redstone`, coupés sans lui).
+Optionnelle : `SuperiorSkyblock2` (modules `signedit`, `islandbypass`, `redstone` et `recount`, coupés sans lui).
 
 ## Commandes
 

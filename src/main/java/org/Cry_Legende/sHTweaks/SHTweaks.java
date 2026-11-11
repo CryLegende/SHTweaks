@@ -6,6 +6,7 @@ import org.Cry_Legende.sHTweaks.modules.CropsModule;
 import org.Cry_Legende.sHTweaks.modules.DoorsModule;
 import org.Cry_Legende.sHTweaks.modules.IslandBypassModule;
 import org.Cry_Legende.sHTweaks.modules.ItemsModule;
+import org.Cry_Legende.sHTweaks.modules.RecountModule;
 import org.Cry_Legende.sHTweaks.modules.RedstoneModule;
 import org.Cry_Legende.sHTweaks.modules.SculkModule;
 import org.Cry_Legende.sHTweaks.modules.SignEditModule;
@@ -44,7 +45,8 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             new Entry("signedit", "SuperiorSkyblock2", SignEditModule::new),
             new Entry("doors", null, DoorsModule::new),
             new Entry("islandbypass", "SuperiorSkyblock2", IslandBypassModule::new),
-            new Entry("redstone", "SuperiorSkyblock2", RedstoneModule::new));
+            new Entry("redstone", "SuperiorSkyblock2", RedstoneModule::new),
+            new Entry("recount", "SuperiorSkyblock2", RecountModule::new));
 
     private final Map<String, Module> active = new LinkedHashMap<>();
     private Messages messages;

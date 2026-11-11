@@ -21,6 +21,9 @@
 #              l'île n'avait aucun membre connecté (disable-redstone-offline) :
 #              répéteurs, comparateurs, observateurs, torches, poudre, lampes,
 #              rails, ampoules, portes, trappes et portillons
+#    recount   Recalcule une fois chaque île à la connexion d'un de ses membres,
+#              pour remettre ses comptes de blocs (niveau d'île) d'accord avec
+#              ce qui est posé ; les îles faites sont notées dans recount.yml
 #
 #  Commandes :
 #    /shtweaks reload   Recharge config.yml et messages.yml, relance les modules.
@@ -122,4 +125,11 @@ modules:
     # Blocs retenus au maximum par chunk ; au-delà, les suivants ne sont pas relancés.
     max-per-chunk: 1024
     # Écrire dans la console le nombre de blocs relancés.
+    log: true
+
+  recount:
+    enabled: false
+    # Secondes entre la connexion d'un membre et le recalcul de son île.
+    delay-seconds: 10
+    # Écrire dans la console chaque île recalculée, avec son niveau avant et après.
     log: true
