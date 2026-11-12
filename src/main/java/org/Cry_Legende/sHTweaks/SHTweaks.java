@@ -3,6 +3,7 @@ package org.Cry_Legende.sHTweaks;
 import org.Cry_Legende.sHTweaks.modules.AmbientSoundsModule;
 import org.Cry_Legende.sHTweaks.modules.AmethystModule;
 import org.Cry_Legende.sHTweaks.modules.AnvilsModule;
+import org.Cry_Legende.sHTweaks.modules.CollecteursModule;
 import org.Cry_Legende.sHTweaks.modules.CropsModule;
 import org.Cry_Legende.sHTweaks.modules.DoorsModule;
 import org.Cry_Legende.sHTweaks.modules.IslandBypassModule;
@@ -58,6 +59,7 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             new Entry("islandbypass", "SuperiorSkyblock2", IslandBypassModule::new),
             new Entry("redstone", "SuperiorSkyblock2", RedstoneModule::new),
             new Entry("recount", "SuperiorSkyblock2", RecountModule::new),
+            new Entry("collecteurs", "AdvancedChests", CollecteursModule::new),
             new Entry("sellwandconfirm", "WildTools", SellWandConfirmModule::new),
             new Entry("lavawarn", null, LavaWarnModule::new),
             new Entry("ambientsounds", null, AmbientSoundsModule::new),

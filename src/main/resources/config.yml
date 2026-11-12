@@ -25,6 +25,8 @@
 #    recount   Recalcule une fois chaque île, quand un de ses membres s'y trouve,
 #              pour remettre ses comptes de blocs (niveau d'île) d'accord avec
 #              ce qui est posé ; les îles faites sont notées dans recount.yml
+#    collecteurs  Ligne de particules sur les bordures du chunk où un coffre
+#              collecteur AdvancedChests est en marche, à la hauteur du joueur
 #    sellwandconfirm  Confirmation avant de vendre un coffre avec la sell wand
 #                     de WildTools (premier clic : le prix, second clic : la vente)
 #    lavawarn  Prévient les joueurs proches quand de la lave devient de l'obsidienne
@@ -152,6 +154,40 @@ modules:
     min-tps: 18
     # Écrire dans la console chaque île dont le niveau change, avec son niveau avant et après.
     log: true
+
+  collecteurs:
+    enabled: true
+    # Quand un joueur se tient dans un chunk où un coffre collecteur AdvancedChests ramasse les objets
+    # (ramassage du chunk activé dans le menu du coffre), une ligne de particules discrète suit les
+    # bordures de ce chunk, à sa hauteur, même s'il est très loin du coffre. Tous les joueurs la voient,
+    # sans commande ni permission ; elle n'est envoyée qu'à lui. L'état des coffres est lu en mémoire dans
+    # l'API d'AdvancedChests : activer ou couper le ramassage se voit à l'examen suivant.
+    #
+    # Chaque joueur est examiné et redessiné une fois tous les N ticks (20 ticks = 1 seconde), à un tick
+    # propre à chaque joueur : le travail est réparti, jamais fait pour tous en même temps. Les particules
+    # de poussière durent environ une demi-seconde : au-delà de 12, la ligne clignote.
+    interval-ticks: 10
+    # Seules les parties des bordures à moins de ce nombre de blocs du joueur sont dessinées.
+    radius: 10.0
+    # Distance en blocs entre deux particules le long d'une bordure. Plus petit = ligne plus continue
+    # mais plus de paquets (une particule = un paquet).
+    spacing: 1.5
+    # Hauteur des particules au-dessus des pieds du joueur, en blocs.
+    height: 0.6
+    particle:
+      # Nom d'une particule Bukkit (Particle). Fonctionnent : DUST (couleur et taille),
+      # DUST_COLOR_TRANSITION (couleur vers end-color), ENTITY_EFFECT (couleur) et toutes les particules
+      # sans données (END_ROD, GLOW, HAPPY_VILLAGER, ELECTRIC_SPARK...).
+      type: DUST
+      # Couleur hexadécimale de DUST, DUST_COLOR_TRANSITION et ENTITY_EFFECT.
+      color: '#55FFFF'
+      # Couleur d'arrivée de DUST_COLOR_TRANSITION.
+      end-color: '#FFFFFF'
+      # Taille de DUST et DUST_COLOR_TRANSITION (0.1 à 4, plus petit = plus discret et plus bref).
+      size: 0.8
+      # false : le réglage « Particules » du client s'applique (les joueurs en « Minimales » ne voient
+      # presque rien). true : toujours affichées, même à plus de 32 blocs.
+      force: false
 
   # ------------------------------------------------------------------------
   #  Modules repris d'anciens plugins : sans section ici, ils tournent avec

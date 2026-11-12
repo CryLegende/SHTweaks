@@ -33,6 +33,7 @@ Chaque réglage est un module qui s'active ou se coupe dans `config.yml` et se r
 | `playerinteract` | Shift + clic droit sur un joueur : lance les commandes réglées, dans les mondes autorisés et hors des régions WorldGuard interdites | SHPlayerInteract |
 | `kittycannon` | `/kittycannon` lance un chat qui explose | SHKittycannon |
 | `recount` | Recalcule une fois chaque île (comptes de blocs et niveau remis d'accord avec ce qui est posé), pendant qu'un de ses membres s'y trouve, une île à la fois et jamais quand le serveur rame ; îles faites dans `recount.yml` | — |
+| `collecteurs` | Ligne de particules discrète sur les bordures du chunk où un coffre collecteur AdvancedChests est en marche (ramassage du chunk activé), à la hauteur du joueur, même s'il est très loin du coffre ; envoyée au seul joueur concerné, sur la partie des bordures proche de lui, sans commande ni permission. L'état est lu en direct dans l'API d'AdvancedChests (par réflexion), les joueurs sont examinés un tick sur `interval-ticks` pour répartir le travail | — |
 
 Les cinq derniers modules viennent d'anciens plugins : sans section dans `config.yml`, ils tournent avec les réglages de la fin du fichier du jar.
 
@@ -44,7 +45,7 @@ Utilisé sur : **Opale**.
 
 ## Dépendances
 
-Optionnelles : `SuperiorSkyblock2` (modules `signedit`, `islandbypass`, `redstone` et `recount`, coupés sans lui), `WildTools` (module `sellwandconfirm`), `WorldGuard` (module `playerinteract`), `Essentials` (SHTweaks se charge après lui pour garder `/kittycannon`).
+Optionnelles : `SuperiorSkyblock2` (modules `signedit`, `islandbypass`, `redstone` et `recount`, coupés sans lui), `WildTools` (module `sellwandconfirm`), `WorldGuard` (module `playerinteract`), `AdvancedChests` (module `collecteurs`, coupé sans lui), `Essentials` (SHTweaks se charge après lui pour garder `/kittycannon`).
 
 ## Commandes
 
