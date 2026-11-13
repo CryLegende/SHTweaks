@@ -67,7 +67,7 @@ modules:
     enabled: true
     # Mondes où les enclumes ne s'usent jamais.
     worlds:
-      - spawn
+      - world
 
   crops:
     enabled: true
@@ -80,23 +80,11 @@ modules:
     # Blocs accélérés. Canne à sucre et cactus : l'âge monte, le bloc suivant pousse ensuite.
     crops:
       - WHEAT
-      - CARROTS
-      - POTATOES
-      - BEETROOTS
-      - NETHER_WART
-      - COCOA
-      - MELON_STEM
-      - PUMPKIN_STEM
-      - SWEET_BERRY_BUSH
-      - TORCHFLOWER_CROP
-      - PITCHER_CROP
       - SUGAR_CANE
       - CACTUS
     # Mondes où le module ne fait rien.
     excluded-worlds:
-      - spawn
-      - arene
-      - Revent
+      - world_nether
 
   sculk:
     enabled: true
@@ -117,15 +105,14 @@ modules:
     enabled: true
     # Mondes où la règle s'applique ; ailleurs, seule la permission bypass permet d'éditer.
     worlds:
-      - SuperiorWorld
+      - world
 
   doors:
     enabled: true
     # Délai, en secondes, avant qu'une porte, une trappe ou un portillon reprenne son état.
     delay-seconds: 3
     worlds:
-      - spawn
-      - arene
+      - world
     pairs:
       # Les deux battants d'une double porte s'ouvrent ensemble.
       doors: true
@@ -191,7 +178,7 @@ modules:
 
   # ------------------------------------------------------------------------
   #  Modules repris d'anciens plugins : sans section ici, ils tournent avec
-  #  les réglages ci-dessous (ceux du serveur au moment de la fusion).
+  #  les réglages ci-dessous.
   # ------------------------------------------------------------------------
 
   sellwandconfirm:
@@ -214,146 +201,27 @@ modules:
     enabled: true
     # Les valeurs de "replayEvery" sont en TICKS (20 ticks = 1 seconde) : un nombre, ou un intervalle min-max.
     sounds:
-      Ambient_spawn:
+      ambiance_1:
         sound: "AMBIENT_SOUL_SAND_VALLEY_LOOP"
         pitch: 1
         volume: 1
         position: "0/63/0"
-        world: "spawn"
+        world: "world"
         replayEvery: 220 # 11 secondes
-      Ambient_spawn2:
+      ambiance_2:
         sound: "AMBIENT_SOUL_SAND_VALLEY_ADDITIONS"
         pitch: 1
         volume: 1
         position: "0/63/0"
-        world: "spawn"
+        world: "world"
         replayEvery: 200-400 # 10-20 secondes
-      Cookie_clocker:
-        sound: "MUSIC_DISC_PIGSTEP"
-        pitch: 1
-        volume: 0.8
-        position: "-98/103/53"
-        world: "spawn"
-        replayEvery: 2940 # 147 secondes
-      enchanteur:
-        sound: "BLOCK_AMETHYST_BLOCK_CHIME"
-        pitch: 1
-        volume: 1.2
-        position: "-38/64/-20"
-        world: "spawn"
-        replayEvery: 20-120 # 1-6 secondes
-      enchanteur2:
-        sound: "BLOCK_AMETHYST_BLOCK_CHIME"
-        pitch: 0.1
-        volume: 1.2
-        position: "-38/64/-20"
-        world: "spawn"
-        replayEvery: 40-140 # 2-7 secondes
-      enchanteur3:
-        sound: "BLOCK_AMETHYST_BLOCK_CHIME"
-        pitch: 2
-        volume: 1.2
-        position: "-38/64/-20"
-        world: "spawn"
-        replayEvery: 80-120 # 4-6 secondes
-      marchand_void:
-        sound: "ENTITY_ENDERMAN_AMBIENT"
-        pitch: 0.2
-        volume: 0.5
-        position: "-12.5/63/-23.5"
-        world: "spawn"
-        replayEvery: 100-200 # 5-10 secondes
-      water_heartbeat:
-        sound: "ENTITY_WARDEN_HEARTBEAT"
-        pitch: 0.1
-        volume: 0.1
-        position: "-111.5/79/45.5"
-        world: "spawn"
-        replayEvery: 1
-      water_heartbeat2:
-        sound: "ENTITY_WARDEN_HEARTBEAT"
-        pitch: 0.1
-        volume: 0.1
-        position: "-120.5/79/45.5"
-        world: "spawn"
-        replayEvery: 1
-      sewer_frog:
-        sound: "ENTITY_FROG_AMBIENT"
-        pitch: 1
-        volume: 0.1
-        position: "-135.5/62/48.5"
-        world: "spawn"
-        replayEvery: 100-200 # 5-10 secondes
-      sewer_frog2:
+      grenouille:
         sound: "ENTITY_FROG_AMBIENT"
         pitch: 1
         volume: 0.2
-        position: "-115.5/62/49.5"
-        world: "spawn"
+        position: "10.5/62/10.5"
+        world: "world"
         replayEvery: 100-200 # 5-10 secondes
-      sewer_frog3:
-        sound: "ENTITY_FROG_AMBIENT"
-        pitch: 2
-        volume: 0.2
-        position: "-115.5/62/49.5"
-        world: "spawn"
-        replayEvery: 160-320 # 8-16 secondes
-      Ambiant_book1:
-        sound: "ITEM_BOOK_PAGE_TURN"
-        pitch: 0.8
-        volume: 0.2
-        position: "-26/53/46"
-        world: "spawn"
-        replayEvery: 60-200 # 3-10 secondes
-      Ambiant_book2:
-        sound: "ITEM_BOOK_PAGE_TURN"
-        pitch: 0.8
-        volume: 0.2
-        position: "-8/55/47"
-        world: "spawn"
-        replayEvery: 140-240 # 7-12 secondes
-      Ambiant_book3:
-        sound: "ITEM_BOOK_PAGE_TURN"
-        pitch: 0.8
-        volume: 0.2
-        position: "-32/41/44"
-        world: "spawn"
-        replayEvery: 160-400 # 8-20 secondes
-      Ambiant_usine:
-        sound: "ENTITY_MINECART_RIDING"
-        pitch: 0.1
-        volume: 0.2
-        position: "-104/41/39"
-        world: "spawn"
-        replayEvery: 40 # 3-4 secondes
-      Ambiant_usine2:
-        sound: "ENTITY_MINECART_RIDING"
-        pitch: 0.1
-        volume: 0.1
-        position: "-101/40/29"
-        world: "spawn"
-        replayEvery: 38-65 # 2-3 secondes
-      Ambiant_usine3:
-        sound: "BLOCK_CANDLE_EXTINGUISH"
-        pitch: 0.1
-        volume: 3
-        position: "-100/44/29"
-        world: "spawn"
-        replayEvery: 80-240 # 4-12 secondes
-      Ambiant_usine4:
-        sound: "ENTITY_WARDEN_HEARTBEAT"
-        pitch: 0.2
-        volume: 0.2
-        position: "-104/35/39"
-        world: "spawn"
-        replayEvery: 3 # 1 seconde
-      Ambiant_usine5:
-        sound: "ENTITY_WARDEN_HEARTBEAT"
-        pitch: 0.1
-        volume: 0.2
-        position: "-104/35/39"
-        world: "spawn"
-        replayEvery: 3
 
   playerinteract:
     enabled: true
@@ -361,15 +229,13 @@ modules:
     debug: false
     # Mondes où le shift + clic droit marche. Liste vide : nulle part.
     whitelist-worlds:
-      - 'spawn'
-      - 'SuperiorWorld'
+      - 'world'
     # Régions WorldGuard où il ne marche pas.
     blacklist-regions:
-      - '1vs1'
-      - 'minikoth'
+      - 'spawn'
     # Commandes lancées par le joueur qui clique ; %player% est le nom du joueur cliqué.
     player-commands:
-      - 'infos %player%'
+      - 'msg %player% Bonjour !'
     # Commandes lancées par la console ; %player% est le nom du joueur cliqué.
     console-commands: []
 
