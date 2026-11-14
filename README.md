@@ -23,6 +23,7 @@ Chaque réglage est un module qui s'active ou se coupe dans `config.yml` et se r
 | `crops` | S'accroupir fait pousser les cultures listées | SHTwerkCrops |
 | `sculk` | Second coup demandé avant de casser un catalyseur de sculk sans Toucher de soie | SHVerifSculk |
 | `amethyst` | Nombre d'éclats lâchés par une grappe d'améthyste, cassée par un joueur, un piston ou un liquide | SHNerfAmethyst |
+| `farmland` | Terres labourées toujours humides dans les mondes choisis : elles ne sèchent pas et ne redeviennent pas de la terre en séchant ou sous un bloc posé dessus (le piétinement reste possible). Une terre sèche se mouille dès qu'un bloc voisin change ou qu'une voisine essaie de sécher ; une terre déjà humide qui essaie de sécher ne change pas et rien n'est envoyé aux joueurs | SafeFarming |
 | `signedit` | Modifier une pancarte déjà écrite : VIP, sur son île | SHSignEdit |
 | `doors` | Portes, trappes et portillons qui reprennent leur état ; doubles portes et trappes voisines ouvertes ensemble | SHInteractReset |
 | `islandbypass` | Mode bypass des îles activé à la connexion pour ceux qui ont `superior.admin.bypass` ; le couper tient jusqu'au prochain redémarrage | — |

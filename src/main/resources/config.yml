@@ -13,6 +13,8 @@
 #    sculk     Confirmation avant de casser un catalyseur de sculk
 #    amethyst  Nombre d'éclats lâchés par une grappe d'améthyste, cassée par un
 #              joueur, un piston ou un liquide
+#    farmland  Terres labourées toujours humides : elles ne sèchent pas et ne
+#              redeviennent pas de la terre (piétinement excepté)
 #    signedit  Modifier une pancarte déjà écrite : VIP, sur son île
 #    doors     Portes, trappes et portillons qui reprennent leur état ; doubles portes
 #    islandbypass  Mode bypass des îles (/is admin bypass) activé à la connexion
@@ -102,6 +104,13 @@ modules:
     fortune-affects-amount: false
     # Envoyer le message amethyst.break à chaque grappe cassée.
     send-message: false
+
+  farmland:
+    enabled: true
+    # Mondes où les terres labourées restent humides ; liste vide : tous les mondes.
+    # Une terre sèche se mouille dès qu'un bloc voisin change ou qu'une voisine essaie de sécher.
+    worlds:
+      - world
 
   signedit:
     enabled: true
