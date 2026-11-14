@@ -6,7 +6,7 @@
 
     <groupId>org.Cry_Legende</groupId>
     <artifactId>SHTweaks</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <name>SHTweaks</name>
@@ -56,6 +56,10 @@
             <url>https://repo.bg-software.com/repository/api/</url>
         </repository>
         <repository>
+            <id>minebench-repo</id>
+            <url>https://repo.minebench.de/</url>
+        </repository>
+        <repository>
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
@@ -81,6 +85,19 @@
             <artifactId>WildToolsAPI</artifactId>
             <version>2024.1</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Module chestshop : événements et outils de ChestShop -->
+        <dependency>
+            <groupId>com.acrobot.chestshop</groupId>
+            <artifactId>chestshop</artifactId>
+            <version>3.12.2</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Module playerinteract : régions -->
         <dependency>

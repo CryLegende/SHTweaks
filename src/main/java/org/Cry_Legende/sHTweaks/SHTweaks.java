@@ -3,6 +3,7 @@ package org.Cry_Legende.sHTweaks;
 import org.Cry_Legende.sHTweaks.modules.AmbientSoundsModule;
 import org.Cry_Legende.sHTweaks.modules.AmethystModule;
 import org.Cry_Legende.sHTweaks.modules.AnvilsModule;
+import org.Cry_Legende.sHTweaks.modules.ChestShopModule;
 import org.Cry_Legende.sHTweaks.modules.CollecteursModule;
 import org.Cry_Legende.sHTweaks.modules.CropsModule;
 import org.Cry_Legende.sHTweaks.modules.DoorsModule;
@@ -23,6 +24,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -42,29 +44,40 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
      * Module connu du plugin. Son nom sert de clé dans config.yml et messages.yml, et de segment
      * dans ses permissions (shtweaks.&lt;module&gt;.&lt;permission&gt;).
      *
-     * @param requiredPlugin plugin sans lequel le module reste coupé, ou null
-     * @param factory        appelé seulement si le plugin requis est là (ses classes ne sont pas chargées sinon)
+     * @param factory         appelé seulement si les plugins requis sont là (ses classes ne sont pas chargées sinon)
+     * @param requiredPlugins plugins sans lesquels le module reste coupé
      */
-    private record Entry(String id, String requiredPlugin, Supplier<Module> factory) {
+    private record Entry(String id, Supplier<Module> factory, String... requiredPlugins) {
+
+        /** Premier plugin requis absent ou désactivé, ou null s'ils sont tous là. */
+        String missingPlugin(PluginManager plugins) {
+            for (String required : requiredPlugins) {
+                if (!plugins.isPluginEnabled(required)) {
+                    return required;
+                }
+            }
+            return null;
+        }
     }
 
     private static final List<Entry> ENTRIES = List.of(
-            new Entry("items", null, ItemsModule::new),
-            new Entry("anvils", null, AnvilsModule::new),
-            new Entry("crops", null, CropsModule::new),
-            new Entry("sculk", null, SculkModule::new),
-            new Entry("amethyst", null, AmethystModule::new),
-            new Entry("signedit", "SuperiorSkyblock2", SignEditModule::new),
-            new Entry("doors", null, DoorsModule::new),
-            new Entry("islandbypass", "SuperiorSkyblock2", IslandBypassModule::new),
-            new Entry("redstone", "SuperiorSkyblock2", RedstoneModule::new),
-            new Entry("recount", "SuperiorSkyblock2", RecountModule::new),
-            new Entry("collecteurs", "AdvancedChests", CollecteursModule::new),
-            new Entry("sellwandconfirm", "WildTools", SellWandConfirmModule::new),
-            new Entry("lavawarn", null, LavaWarnModule::new),
-            new Entry("ambientsounds", null, AmbientSoundsModule::new),
-            new Entry("playerinteract", "WorldGuard", PlayerInteractModule::new),
-            new Entry("kittycannon", null, KittycannonModule::new));
+            new Entry("items", ItemsModule::new),
+            new Entry("anvils", AnvilsModule::new),
+            new Entry("crops", CropsModule::new),
+            new Entry("sculk", SculkModule::new),
+            new Entry("amethyst", AmethystModule::new),
+            new Entry("signedit", SignEditModule::new, "SuperiorSkyblock2"),
+            new Entry("doors", DoorsModule::new),
+            new Entry("islandbypass", IslandBypassModule::new, "SuperiorSkyblock2"),
+            new Entry("redstone", RedstoneModule::new, "SuperiorSkyblock2"),
+            new Entry("recount", RecountModule::new, "SuperiorSkyblock2"),
+            new Entry("collecteurs", CollecteursModule::new, "AdvancedChests"),
+            new Entry("chestshop", ChestShopModule::new, "ChestShop", "AdvancedChests"),
+            new Entry("sellwandconfirm", SellWandConfirmModule::new, "WildTools"),
+            new Entry("lavawarn", LavaWarnModule::new),
+            new Entry("ambientsounds", AmbientSoundsModule::new),
+            new Entry("playerinteract", PlayerInteractModule::new, "WorldGuard"),
+            new Entry("kittycannon", KittycannonModule::new));
 
     /**
      * Modules qui étaient des plugins à part : sans section dans le config.yml du serveur, ils tournent avec les
@@ -160,8 +173,9 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             if (section == null || !section.getBoolean("enabled", ON_BY_DEFAULT.contains(entry.id()))) {
                 continue;
             }
-            if (entry.requiredPlugin() != null && !getServer().getPluginManager().isPluginEnabled(entry.requiredPlugin())) {
-                getLogger().warning("Module " + entry.id() + " coupé : " + entry.requiredPlugin() + " absent.");
+            String missing = entry.missingPlugin(getServer().getPluginManager());
+            if (missing != null) {
+                getLogger().warning("Module " + entry.id() + " coupé : " + missing + " absent.");
                 continue;
             }
             try {
@@ -244,10 +258,11 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             case "modules" -> {
                 messages.send(sender, "command.modules-header");
                 for (Entry entry : ENTRIES) {
+                    String missing = entry.missingPlugin(getServer().getPluginManager());
                     if (active.containsKey(entry.id())) {
                         messages.send(sender, "command.module-on", "module", entry.id());
-                    } else if (entry.requiredPlugin() != null && !getServer().getPluginManager().isPluginEnabled(entry.requiredPlugin())) {
-                        messages.send(sender, "command.module-missing", "module", entry.id(), "plugin", entry.requiredPlugin());
+                    } else if (missing != null) {
+                        messages.send(sender, "command.module-missing", "module", entry.id(), "plugin", missing);
                     } else {
                         messages.send(sender, "command.module-off", "module", entry.id());
                     }

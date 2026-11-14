@@ -24,6 +24,14 @@ islandbypass:
   # Mode bypass activé à la connexion.
   enabled: '&7&l« &e&lSH &8&l» &7Mode bypass &aACTIVÉ &7automatiquement. &e/is admin bypass &7pour le couper.'
 
+chestshop:
+  # Shop sur un coffre AdvancedChests pas encore chargé : son chargement vient d'être demandé.
+  loading: '&7&l« &e&lSH &8&l» &7Le coffre de ce shop &echarge&7, réessayez dans un instant.'
+  # Shop dont le coffre AdvancedChests est en train d'être vendu ou compressé.
+  busy: '&7&l« &6&lSH &8&l» &7Le coffre de ce shop est en cours de &6vente &7ou de &6compression&7, réessayez dans un instant.'
+  # Shop dont le coffre AdvancedChests ne peut pas être lu (type de coffre supprimé, erreur dans la console).
+  unavailable: '&7&l« &c&lSH &8&l» &7Le coffre de ce shop est &cindisponible&7.'
+
 sellwandconfirm:
   # Envoyé au joueur qui clique avec la sell wand : il doit cliquer à nouveau sur le même coffre pour vendre.
   # {price} : prix total de la vente, multiplicateur compris.

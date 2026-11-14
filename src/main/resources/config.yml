@@ -27,6 +27,8 @@
 #              ce qui est posé ; les îles faites sont notées dans recount.yml
 #    collecteurs  Ligne de particules sur les bordures du chunk où un coffre
 #              collecteur AdvancedChests est en marche, à la hauteur du joueur
+#    chestshop  Shops ChestShop sur les coffres AdvancedChests : le stock et la
+#              place sont ceux des pages du coffre
 #    sellwandconfirm  Confirmation avant de vendre un coffre avec la sell wand
 #                     de WildTools (premier clic : le prix, second clic : la vente)
 #    lavawarn  Prévient les joueurs proches quand de la lave devient de l'obsidienne
@@ -175,6 +177,16 @@ modules:
       # false : le réglage « Particules » du client s'applique (les joueurs en « Minimales » ne voient
       # presque rien). true : toujours affichées, même à plus de 32 blocs.
       force: false
+
+  chestshop:
+    enabled: true
+    # Une pancarte ChestShop posée contre un coffre AdvancedChests vend et achète avec le contenu des
+    # pages du coffre : stock, place libre, achat partiel et achat d'un stack accroupi (réglages
+    # SHIFT_* de ChestShop) se calculent sur ces pages. Un « ? » en 4e ligne prend le premier objet des
+    # pages ; coffre vide : cliquez la pancarte avec l'objet en main, comme pour un coffre normal.
+    # Prix, argent, messages et historique restent ceux de ChestShop. Un coffre pas encore chargé, en
+    # cours de vente ou de compression refuse la transaction le temps de l'opération (messages
+    # chestshop.* de messages.yml).
 
   # ------------------------------------------------------------------------
   #  Modules repris d'anciens plugins : sans section ici, ils tournent avec
