@@ -208,14 +208,21 @@ modules:
       type: FLAME
       # Vitesse verticale de la particule, en blocs par tick (0 = elle reste sur place).
       rise: 0.02
+      # Objet lâché avec la touche de jet : il apparaît à hauteur des yeux, la particule est placée devant le
+      # joueur, à cette distance en blocs (0 = à l'endroit de l'objet) et à « below-eyes » blocs sous ses yeux.
+      # Un objet tombé d'un bloc cassé garde l'endroit où il serait tombé.
+      forward: 1.1
+      below-eyes: 0.4
       # false : le réglage « Particules » du client s'applique. true : toujours affichée.
       force: false
     sound:
       # Nom d'un son Bukkit ou clé Minecraft ; vide : aucun son.
-      name: ENTITY_ITEM_PICKUP
-      volume: 0.4
-      # De 0.5 (grave) à 2.0 (aigu) ; le ramassage normal d'un objet joue à 1.0.
-      pitch: 1.9
+      # Le ramassage normal d'un objet (ENTITY_ITEM_PICKUP) joue déjà à la hauteur maximale du jeu : il ne se
+      # distinguerait pas d'un vrai ramassage.
+      name: BLOCK_NOTE_BLOCK_CHIME
+      volume: 0.3
+      # De 0.5 (grave) à 2.0 (aigu).
+      pitch: 1.8
 
   chestshop:
     enabled: true

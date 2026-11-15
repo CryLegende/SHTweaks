@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Fait comprendre au joueur que son objet a été ramassé par un coffre collecteur AdvancedChests : une petite particule
- * et un son de ramassage aigu, à l'endroit où l'objet serait tombé, envoyés à lui seul. Rien n'est signalé pour ce qui
+ * et un tintement aigu, à l'endroit où l'objet serait tombé (devant lui quand il l'a lâché), envoyés à lui seul. Rien n'est signalé pour ce qui
  * n'est pas son fait (cactus, mobs, entonnoirs...) : il faut qu'il ait lâché l'objet ou cassé le bloc lui-même.
  *
  * <p>AdvancedChests ramasse l'objet pendant son apparition (délai de ramassage à 0) et annule l'événement : l'objet
@@ -52,6 +52,11 @@ public final class RamassageModule extends Module {
         double x;
         double y;
         double z;
+        /** Endroit du signal quand il n'est pas celui de l'objet (objet lâché : devant le joueur). */
+        boolean shifted;
+        double signalX;
+        double signalY;
+        double signalZ;
         long until;
     }
 
@@ -64,6 +69,8 @@ public final class RamassageModule extends Module {
     private double radiusSquared;
     private Particle particle;
     private double rise;
+    private double forward;
+    private double below;
     private boolean force;
     private Sound sound;
     private float volume;
@@ -75,11 +82,13 @@ public final class RamassageModule extends Module {
         double radius = clamp(config.getDouble("radius", 8.0), 1.0, 64.0);
         radiusSquared = radius * radius;
         rise = clamp(config.getDouble("particle.rise", 0.02), 0.0, 0.5);
+        forward = clamp(config.getDouble("particle.forward", 1.1), 0.0, 4.0);
+        below = clamp(config.getDouble("particle.below-eyes", 0.4), 0.0, 1.6);
         force = config.getBoolean("particle.force", false);
         readParticle(config.getString("particle.type", "FLAME"));
-        readSound(config.getString("sound.name", "ENTITY_ITEM_PICKUP"));
-        volume = (float) clamp(config.getDouble("sound.volume", 0.4), 0.0, 4.0);
-        pitch = (float) clamp(config.getDouble("sound.pitch", 1.9), 0.5, 2.0);
+        readSound(config.getString("sound.name", "BLOCK_NOTE_BLOCK_CHIME"));
+        volume = (float) clamp(config.getDouble("sound.volume", 0.3), 0.0, 4.0);
+        pitch = (float) clamp(config.getDouble("sound.pitch", 1.8), 0.5, 2.0);
 
         Plugin advancedChests = plugin.getServer().getPluginManager().getPlugin("AdvancedChests");
         try {
@@ -106,6 +115,15 @@ public final class RamassageModule extends Module {
     public void onDrop(PlayerDropItemEvent event) {
         Location at = event.getItemDrop().getLocation();
         remember(event.getPlayer(), at.getWorld(), at.getX(), at.getY(), at.getZ());
+        // L'objet lâché apparaît à hauteur des yeux : la particule serait dans la tête du joueur, on la met devant lui
+        Player player = event.getPlayer();
+        Location eyes = player.getEyeLocation();
+        double yaw = Math.toRadians(eyes.getYaw());
+        Action current = action.get();
+        current.shifted = true;
+        current.signalX = eyes.getX() - Math.sin(yaw) * forward;
+        current.signalY = eyes.getY() - below;
+        current.signalZ = eyes.getZ() + Math.cos(yaw) * forward;
     }
 
     @EventHandler
@@ -147,7 +165,11 @@ public final class RamassageModule extends Module {
         }
         last.put(id, now);
         current.player = null;
-        signal(player, at);
+        if (current.shifted) {
+            signal(player, current.signalX, current.signalY, current.signalZ);
+        } else {
+            signal(player, at.getX(), at.getY(), at.getZ());
+        }
     }
 
     private void remember(Player player, World world, double x, double y, double z) {
@@ -157,14 +179,15 @@ public final class RamassageModule extends Module {
         current.x = x;
         current.y = y;
         current.z = z;
+        current.shifted = false;
         current.until = System.nanoTime() + WINDOW_NANOS;
     }
 
-    private void signal(Player player, Location at) {
+    private void signal(Player player, double x, double y, double z) {
         // Particule dont le vecteur (0, 1, 0) fixe la direction et « rise » la vitesse : une braise qui monte un peu
-        player.spawnParticle(particle, at.getX(), at.getY(), at.getZ(), 0, 0.0, 1.0, 0.0, rise, null, force);
+        player.spawnParticle(particle, x, y, z, 0, 0.0, 1.0, 0.0, rise, null, force);
         if (sound != null) {
-            player.playSound(at, sound, SoundCategory.PLAYERS, volume, pitch);
+            player.playSound(new Location(player.getWorld(), x, y, z), sound, SoundCategory.PLAYERS, volume, pitch);
         }
     }
 
@@ -190,7 +213,7 @@ public final class RamassageModule extends Module {
         }
     }
 
-    /** Son ; aucun son si le nom est vide, ENTITY_ITEM_PICKUP si le nom est inconnu. */
+    /** Son ; aucun son si le nom est vide, BLOCK_NOTE_BLOCK_CHIME si le nom est inconnu. */
     private void readSound(String name) {
         if (name == null || name.isBlank()) {
             sound = null;
@@ -198,7 +221,7 @@ public final class RamassageModule extends Module {
         }
         sound = Sounds.sound(name);
         if (sound == null) {
-            plugin.getLogger().warning(path("sound.name") + " : son inconnu « " + name + " », ENTITY_ITEM_PICKUP utilisé.");
+            plugin.getLogger().warning(path("sound.name") + " : son inconnu « " + name + " », BLOCK_NOTE_BLOCK_CHIME utilisé.");
             sound = Sound.ENTITY_ITEM_PICKUP;
         }
     }
