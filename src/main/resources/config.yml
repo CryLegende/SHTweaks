@@ -29,6 +29,9 @@
 #              ce qui est posé ; les îles faites sont notées dans recount.yml
 #    collecteurs  Ligne de particules sur les bordures du chunk où un coffre
 #              collecteur AdvancedChests est en marche, à la hauteur du joueur
+#    ramassage  Particule et son de ramassage quand un coffre collecteur
+#              AdvancedChests prend un objet que le joueur vient de lâcher ou
+#              de faire tomber en cassant un bloc
 #    chestshop  Shops ChestShop sur les coffres AdvancedChests : le stock et la
 #              place sont ceux des pages du coffre
 #    sellwandconfirm  Confirmation avant de vendre un coffre avec la sell wand
@@ -186,6 +189,33 @@ modules:
       # false : le réglage « Particules » du client s'applique (les joueurs en « Minimales » ne voient
       # presque rien). true : toujours affichées, même à plus de 32 blocs.
       force: false
+
+  ramassage:
+    enabled: true
+    # Un objet lâché (touche de jet) ou tombé d'un bloc que le joueur vient de casser, et ramassé aussitôt par un
+    # coffre collecteur AdvancedChests (ramassage du chunk activé), n'apparaît jamais au sol et n'arrive pas dans
+    # son inventaire : il voit une petite particule et entend un son de ramassage, à l'endroit où l'objet serait
+    # tombé. Seul ce joueur les perçoit. Ce qui n'est pas son fait (cactus, mobs, entonnoirs, autres plugins) ne
+    # déclenche rien.
+    #
+    # Délai minimal, en millisecondes, entre deux signaux pour un même joueur (particule et son ensemble).
+    cooldown-ms: 1000
+    # Distance maximale, en blocs, entre le bloc cassé ou l'objet lâché et l'endroit où tombe l'objet ramassé
+    # (casse en zone, minerai en veine).
+    radius: 8.0
+    particle:
+      # Nom d'une particule Bukkit sans données (FLAME, END_ROD, GLOW, HAPPY_VILLAGER...).
+      type: FLAME
+      # Vitesse verticale de la particule, en blocs par tick (0 = elle reste sur place).
+      rise: 0.02
+      # false : le réglage « Particules » du client s'applique. true : toujours affichée.
+      force: false
+    sound:
+      # Nom d'un son Bukkit ou clé Minecraft ; vide : aucun son.
+      name: ENTITY_ITEM_PICKUP
+      volume: 0.4
+      # De 0.5 (grave) à 2.0 (aigu) ; le ramassage normal d'un objet joue à 1.0.
+      pitch: 1.9
 
   chestshop:
     enabled: true

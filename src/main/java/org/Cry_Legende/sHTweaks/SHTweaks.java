@@ -13,6 +13,7 @@ import org.Cry_Legende.sHTweaks.modules.ItemsModule;
 import org.Cry_Legende.sHTweaks.modules.KittycannonModule;
 import org.Cry_Legende.sHTweaks.modules.LavaWarnModule;
 import org.Cry_Legende.sHTweaks.modules.PlayerInteractModule;
+import org.Cry_Legende.sHTweaks.modules.RamassageModule;
 import org.Cry_Legende.sHTweaks.modules.RecountModule;
 import org.Cry_Legende.sHTweaks.modules.RedstoneModule;
 import org.Cry_Legende.sHTweaks.modules.SculkModule;
@@ -74,6 +75,7 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             new Entry("redstone", RedstoneModule::new, "SuperiorSkyblock2"),
             new Entry("recount", RecountModule::new, "SuperiorSkyblock2"),
             new Entry("collecteurs", CollecteursModule::new, "AdvancedChests"),
+            new Entry("ramassage", RamassageModule::new, "AdvancedChests"),
             new Entry("chestshop", ChestShopModule::new, "ChestShop", "AdvancedChests"),
             new Entry("sellwandconfirm", SellWandConfirmModule::new, "WildTools"),
             new Entry("lavawarn", LavaWarnModule::new),
