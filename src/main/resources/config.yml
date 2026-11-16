@@ -195,8 +195,9 @@ modules:
     # Un objet lâché (touche de jet) ou tombé d'un bloc que le joueur vient de casser, et ramassé aussitôt par un
     # coffre collecteur AdvancedChests (ramassage du chunk activé), n'apparaît jamais au sol et n'arrive pas dans
     # son inventaire : il voit une petite particule et entend un son de ramassage, à l'endroit où l'objet serait
-    # tombé. Seul ce joueur les perçoit. Ce qui n'est pas son fait (cactus, mobs, entonnoirs, autres plugins) ne
-    # déclenche rien.
+    # tombé. Seul ce joueur les perçoit. Ce qui n'est pas son fait (cactus, mobs, entonnoirs, casse automatique
+    # d'un générateur, autres plugins) ne déclenche rien, pas plus qu'un objet qu'un plugin range ailleurs
+    # (générateur amélioré en récupération automatique ou relié à un coffre).
     #
     # Délai minimal, en millisecondes, entre deux signaux pour un même joueur (particule et son ensemble).
     cooldown-ms: 1000

@@ -1,6 +1,7 @@
 package org.Cry_Legende.sHTweaks.modules;
 
 import org.Cry_Legende.sHTweaks.Module;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -8,15 +9,18 @@ import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -25,27 +29,29 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Fait comprendre au joueur que son objet a été ramassé par un coffre collecteur AdvancedChests : une petite particule
  * et un tintement aigu, à l'endroit où l'objet serait tombé (devant lui quand il l'a lâché), envoyés à lui seul. Rien n'est signalé pour ce qui
- * n'est pas son fait (cactus, mobs, entonnoirs...) : il faut qu'il ait lâché l'objet ou cassé le bloc lui-même.
+ * n'est pas son fait (cactus, mobs, entonnoirs, casse automatique d'un générateur...) : il faut qu'il ait lâché l'objet ou cassé le bloc lui-même.
  *
- * <p>AdvancedChests ramasse l'objet pendant son apparition (délai de ramassage à 0) et annule l'événement : l'objet
- * n'existe jamais. Cet écouteur, à la priorité MONITOR, voit donc un {@link ItemSpawnEvent} annulé dans un chunk où un
- * collecteur est en marche. Pour savoir qui en est la cause, il retient la dernière action du joueur ({@link BlockBreakEvent}
- * ou {@link PlayerDropItemEvent}) : l'objet apparaît dans le même appel, quelques microsecondes plus tard, sur le même
- * thread. Cette action est donc propre à chaque thread (DivineMC fait tourner les mondes en parallèle) et reste valable
- * une fraction de tick, dans un rayon autour de l'action.</p>
+ * <p>AdvancedChests ramasse l'objet pendant son apparition (délai de ramassage à 0), le retire et annule l'événement :
+ * l'objet n'existe jamais. Cet écouteur, à la priorité MONITOR, voit donc un {@link ItemSpawnEvent} annulé dont l'objet est
+ * déjà retiré, dans un chunk où un collecteur est en marche. Un objet seulement annulé n'a pas été ramassé : un autre plugin
+ * l'a envoyé ailleurs (EliteGenerator annule l'apparition des objets d'un générateur amélioré et les range dans
+ * l'inventaire du joueur ou dans le coffre lié ; AdvancedChests ignore les apparitions déjà annulées).</p>
  *
- * <p>Coût : le cas courant (objet qui apparaît sans être annulé) coûte un test de booléen. Un signal par joueur au plus
- * tous les {@code cooldown-ms}, particule et son ensemble.</p>
+ * <p>Pour savoir qui en est la cause, l'action du joueur est retenue sur le thread où elle a lieu, le temps de sa propre
+ * suite d'événements : objet lâché ({@link PlayerDropItemEvent}, puis l'apparition de cet objet), bloc cassé
+ * ({@link BlockBreakEvent}, puis {@link BlockDropItemEvent} qui donne les objets du bloc, puis leur apparition). Elle
+ * prend fin à l'apparition du dernier de ses objets, ou dès que {@link BlockDropItemEvent} est annulé : ce qui apparaît
+ * ensuite sur le même thread (la casse automatique d'un générateur, lancée par le planificateur juste après les paquets
+ * des joueurs, dans le même tick) n'est plus à lui. Un objet qu'un plugin fait apparaître pendant cette suite (générateur
+ * qui relâche les objets de son bloc, casse en zone, inventaire plein) compte, dans un rayon autour de l'action. Une
+ * action dont la suite ne se termine pas ne survit pas au tick.</p>
+ *
+ * <p>Coût : une lecture de variable de thread par objet qui apparaît. Un signal par joueur au plus tous les
+ * {@code cooldown-ms}, particule et son ensemble.</p>
  */
 public final class RamassageModule extends Module {
 
-    /**
-     * Durée de validité d'une action. L'objet apparaît dans le même appel que l'action ; cette borne n'écarte que ce qui
-     * viendrait bien après (un objet lâché par une tâche de plugin, par exemple).
-     */
-    private static final long WINDOW_NANOS = 100_000_000L;
-
-    /** Dernière action d'un joueur sur un thread : réutilisée, jamais recréée. */
+    /** Action en cours d'un joueur sur un thread : réutilisée, jamais recréée. */
     private static final class Action {
         Player player;
         World world;
@@ -57,7 +63,37 @@ public final class RamassageModule extends Module {
         double signalX;
         double signalY;
         double signalZ;
-        long until;
+        int tick;
+        /** Objets de l'action qui doivent encore apparaître ; -1 tant qu'ils ne sont pas connus (bloc cassé). */
+        int pending = -1;
+        int[] ids = new int[8];
+
+        void clear() {
+            player = null;
+            world = null;
+            pending = -1;
+        }
+
+        void expect(int id) {
+            if (pending < 0) {
+                pending = 0;
+            }
+            if (pending == ids.length) {
+                ids = Arrays.copyOf(ids, pending * 2);
+            }
+            ids[pending++] = id;
+        }
+
+        /** Retire cet objet de ceux qui doivent apparaître ; vrai s'il était le dernier. */
+        boolean arrived(int id) {
+            for (int i = 0; i < pending; i++) {
+                if (ids[i] == id) {
+                    ids[i] = ids[--pending];
+                    return pending == 0;
+                }
+            }
+            return false;
+        }
     }
 
     private final ThreadLocal<Action> action = ThreadLocal.withInitial(Action::new);
@@ -105,21 +141,47 @@ public final class RamassageModule extends Module {
         last.clear();
     }
 
+    /** Bloc cassé : ses objets ne sont pas encore connus, ils le seront par {@link #onBlockDrop}. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
+        // sans objets, aucun BlockDropItemEvent ne viendrait clore l'action
+        if (!event.isDropItems()) {
+            return;
+        }
         Block block = event.getBlock();
         remember(event.getPlayer(), block.getWorld(), block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
     }
 
+    /** Objets du bloc que le joueur vient de casser : ils apparaissent juste après, dans cet ordre. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onBlockDrop(BlockDropItemEvent event) {
+        // annulé : les objets n'apparaîtront pas (SHTPDrops les a mis dans l'inventaire), la suite de l'action s'arrête là
+        if (event.isCancelled()) {
+            action.get().clear();
+            return;
+        }
+        Block block = event.getBlock();
+        Action current = remember(event.getPlayer(), block.getWorld(), block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
+        for (Item item : event.getItems()) {
+            // un objet déjà dans le monde (ajouté par un plugin) n'apparaîtra pas
+            if (!item.isValid()) {
+                current.expect(item.getEntityId());
+            }
+        }
+        if (current.pending <= 0) {
+            current.clear();
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDrop(PlayerDropItemEvent event) {
-        Location at = event.getItemDrop().getLocation();
-        remember(event.getPlayer(), at.getWorld(), at.getX(), at.getY(), at.getZ());
+        Item drop = event.getItemDrop();
+        Location at = drop.getLocation();
+        Action current = remember(event.getPlayer(), at.getWorld(), at.getX(), at.getY(), at.getZ());
+        current.expect(drop.getEntityId());
         // L'objet lâché apparaît à hauteur des yeux : la particule serait dans la tête du joueur, on la met devant lui
-        Player player = event.getPlayer();
-        Location eyes = player.getEyeLocation();
+        Location eyes = event.getPlayer().getEyeLocation();
         double yaw = Math.toRadians(eyes.getYaw());
-        Action current = action.get();
         current.shifted = true;
         current.signalX = eyes.getX() - Math.sin(yaw) * forward;
         current.signalY = eyes.getY() - below;
@@ -132,55 +194,71 @@ public final class RamassageModule extends Module {
     }
 
     /**
-     * AdvancedChests annule l'apparition de l'objet quand un collecteur du chunk le prend (priorité HIGH) ; on passe
+     * AdvancedChests retire l'objet qu'un collecteur du chunk prend et annule son apparition (priorité HIGH) ; on passe
      * donc après lui et on veut justement les événements annulés.
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onItemSpawn(ItemSpawnEvent event) {
-        if (!event.isCancelled()) {
-            return;
-        }
         Action current = action.get();
         Player player = current.player;
         if (player == null) {
             return;
         }
-        long now = System.nanoTime();
-        if (now - current.until > 0) {
-            current.player = null;
+        if (current.tick != Bukkit.getCurrentTick()) {
+            current.clear();
             return;
+        }
+        Item item = event.getEntity();
+        boolean lastOfAction = current.arrived(item.getEntityId());
+        if (taken(event, item, current, player)) {
+            current.clear();
+            return;
+        }
+        if (lastOfAction) {
+            current.clear();
+        }
+    }
+
+    /** L'objet a-t-il été pris par un collecteur, et ce joueur doit-il en être prévenu maintenant ? Envoie le signal si oui. */
+    private boolean taken(ItemSpawnEvent event, Item item, Action current, Player player) {
+        // annulé sans être retiré : un plugin l'a envoyé ailleurs (inventaire, coffre lié), pas un collecteur
+        if (!event.isCancelled() || !item.isDead()) {
+            return false;
         }
         Location at = event.getLocation();
         if (at.getWorld() != current.world || distanceSquared(at, current) > radiusSquared) {
-            return;
+            return false;
         }
         UUID id = player.getUniqueId();
+        long now = System.nanoTime();
         Long before = last.get(id);
         if (before != null && now - before < cooldownNanos) {
-            return;
+            return false;
         }
         CollectorLink collectors = link;
         if (collectors == null || !collectors.hasActiveCollector(at)) {
-            return;
+            return false;
         }
         last.put(id, now);
-        current.player = null;
         if (current.shifted) {
             signal(player, current.signalX, current.signalY, current.signalZ);
         } else {
             signal(player, at.getX(), at.getY(), at.getZ());
         }
+        return true;
     }
 
-    private void remember(Player player, World world, double x, double y, double z) {
+    private Action remember(Player player, World world, double x, double y, double z) {
         Action current = action.get();
+        current.clear();
         current.player = player;
         current.world = world;
         current.x = x;
         current.y = y;
         current.z = z;
         current.shifted = false;
-        current.until = System.nanoTime() + WINDOW_NANOS;
+        current.tick = Bukkit.getCurrentTick();
+        return current;
     }
 
     private void signal(Player player, double x, double y, double z) {
@@ -222,7 +300,7 @@ public final class RamassageModule extends Module {
         sound = Sounds.sound(name);
         if (sound == null) {
             plugin.getLogger().warning(path("sound.name") + " : son inconnu « " + name + " », BLOCK_NOTE_BLOCK_CHIME utilisé.");
-            sound = Sound.ENTITY_ITEM_PICKUP;
+            sound = Sound.BLOCK_NOTE_BLOCK_CHIME;
         }
     }
 
