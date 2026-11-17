@@ -19,6 +19,7 @@ import org.Cry_Legende.sHTweaks.modules.RedstoneModule;
 import org.Cry_Legende.sHTweaks.modules.SculkModule;
 import org.Cry_Legende.sHTweaks.modules.SellWandConfirmModule;
 import org.Cry_Legende.sHTweaks.modules.SignEditModule;
+import org.Cry_Legende.sHTweaks.modules.UnknownCommandModule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -81,7 +82,8 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             new Entry("lavawarn", LavaWarnModule::new),
             new Entry("ambientsounds", AmbientSoundsModule::new),
             new Entry("playerinteract", PlayerInteractModule::new, "WorldGuard"),
-            new Entry("kittycannon", KittycannonModule::new));
+            new Entry("kittycannon", KittycannonModule::new),
+            new Entry("unknowncommand", UnknownCommandModule::new));
 
     /**
      * Modules qui étaient des plugins à part : sans section dans le config.yml du serveur, ils tournent avec les
