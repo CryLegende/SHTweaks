@@ -1,6 +1,5 @@
 package org.Cry_Legende.sHTweaks;
 
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -46,12 +45,6 @@ public final class Messages {
         var in = plugin.getResource("messages.yml");
         return in == null ? new YamlConfiguration()
             : YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
-    }
-
-    /** Le message « key » en composant, ou null s'il est vide (rien à envoyer). */
-    public Component component(String key) {
-        String text = file.getString(key);
-        return text == null || text.isEmpty() ? null : LEGACY.deserialize(text);
     }
 
     /** Envoie le message « key », chaque paire de « replacements » remplaçant {nom} par sa valeur. */

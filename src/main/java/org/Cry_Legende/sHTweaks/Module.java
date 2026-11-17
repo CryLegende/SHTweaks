@@ -1,6 +1,5 @@
 package org.Cry_Legende.sHTweaks;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
@@ -31,11 +30,6 @@ public abstract class Module implements Listener {
     /** Message du module : clé &lt;module&gt;.&lt;nom&gt; de messages.yml. */
     protected final void send(CommandSender to, String key, String... replacements) {
         plugin.messages().send(to, id + "." + key, replacements);
-    }
-
-    /** Message du module en composant, ou null s'il est vide : clé &lt;module&gt;.&lt;nom&gt; de messages.yml. */
-    protected final Component message(String key) {
-        return plugin.messages().component(id + "." + key);
     }
 
     /** Vrai quand le module démarre à cause de /shtweaks reload, sur un serveur qui tourne. */

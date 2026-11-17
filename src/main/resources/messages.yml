@@ -46,11 +46,6 @@ kittycannon:
   no-permission: 'Vous n''avez pas la permission d''utiliser cette commande.'
   player-only: 'Seul un joueur peut exécuter cette commande.'
 
-unknowncommand:
-  # Remplace le texte de Paper (« Unknown or incomplete command », « Incorrect argument for command ») pour toute
-  # commande refusée à l'analyse. Vide : le texte de Paper reste.
-  message: '&7&l« &f&lSH &8&l» &fCommande inconnue, essayez autre chose.'
-
 command:
   no-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission &7d''utiliser cette commande.'
   # /shtweaks sans argument ou avec une sous-commande inconnue. {subcommands} : celles que l'expéditeur peut utiliser

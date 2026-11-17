@@ -40,10 +40,6 @@
 #    ambientsounds  Sons d'ambiance joués à une position d'un monde
 #    playerinteract  Shift + clic droit sur un joueur : lance les commandes réglées
 #    kittycannon  /kittycannon : un chat qui explose
-#    unknowncommand  Les espaces à la fin d'une commande de joueur sont retirés
-#              (« /shop » suivi d'un espace marchait mal) ; le message de Paper
-#              pour une commande inconnue ou mal formée est remplacé par celui
-#              de SkyHand (messages.yml)
 #
 #  Les cinq derniers viennent d'anciens plugins : sans section dans ce fichier,
 #  ils tournent avec les réglages de la fin de ce fichier.
@@ -306,7 +302,3 @@ modules:
     enabled: true
     # Chance de faire apparaître un bébé chat, en pourcentage.
     baby-cat-chance: 10
-
-  # Pas d'autre réglage : le texte est dans messages.yml (unknowncommand.message).
-  unknowncommand:
-    enabled: true
