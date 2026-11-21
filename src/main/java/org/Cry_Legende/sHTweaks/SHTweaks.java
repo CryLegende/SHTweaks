@@ -3,6 +3,7 @@ package org.Cry_Legende.sHTweaks;
 import org.Cry_Legende.sHTweaks.modules.AmbientSoundsModule;
 import org.Cry_Legende.sHTweaks.modules.AmethystModule;
 import org.Cry_Legende.sHTweaks.modules.AnvilsModule;
+import org.Cry_Legende.sHTweaks.modules.BonemealModule;
 import org.Cry_Legende.sHTweaks.modules.ChestShopModule;
 import org.Cry_Legende.sHTweaks.modules.CollecteursModule;
 import org.Cry_Legende.sHTweaks.modules.CropsModule;
@@ -69,6 +70,7 @@ public class SHTweaks extends JavaPlugin implements TabCompleter {
             new Entry("sculk", SculkModule::new),
             new Entry("amethyst", AmethystModule::new),
             new Entry("farmland", FarmlandModule::new),
+            new Entry("bonemeal", BonemealModule::new),
             new Entry("signedit", SignEditModule::new, "SuperiorSkyblock2"),
             new Entry("doors", DoorsModule::new),
             new Entry("islandbypass", IslandBypassModule::new, "SuperiorSkyblock2"),

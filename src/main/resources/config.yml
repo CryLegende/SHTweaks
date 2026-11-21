@@ -15,8 +15,10 @@
 #              joueur, un piston ou un liquide
 #    farmland  Terres labourées toujours humides : elles ne sèchent pas et ne
 #              redeviennent pas de la terre (piétinement excepté)
+#    bonemeal  Poudre d'os sans effet sur les fleurs à deux blocs de haut
+#              (elle les dupliquait)
 #    signedit  Modifier une pancarte déjà écrite : VIP, sur son île
-#    doors     Portes, trappes et portillons qui reprennent leur état ; doubles portes
+#    doors    Portes, trappes et portillons qui reprennent leur état ; doubles portes
 #    islandbypass  Mode bypass des îles (/is admin bypass) activé à la connexion
 #                  pour ceux qui ont superior.admin.bypass ; le couper tient
 #                  jusqu'au prochain redémarrage
@@ -114,6 +116,16 @@ modules:
     # Une terre sèche se mouille dès qu'un bloc voisin change ou qu'une voisine essaie de sécher.
     worlds:
       - world
+
+  bonemeal:
+    enabled: true
+    # Blocs sur lesquels la poudre d'os ne fait plus rien, que ce soit un joueur ou un distributeur qui l'utilise :
+    # en vanilla elle fait tomber une copie de ces fleurs à deux blocs de haut. La poudre d'os n'est pas consommée.
+    blocks:
+      - SUNFLOWER
+      - LILAC
+      - ROSE_BUSH
+      - PEONY
 
   signedit:
     enabled: true
